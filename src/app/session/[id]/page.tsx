@@ -8,7 +8,8 @@ import VibeSwitcher from '@/components/vibe-switcher';
 import TimeboxedTaskList from '@/components/timeboxed-task-list';
 import VolatilityChart from '@/components/volatility-chart';
 import SettlementModal from '@/components/settlement-modal';
-import HabitTicker from '@/components/habit-ticker';
+import ReliabilityScoreHero from '@/components/reliability-score-hero';
+import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/wager-utils';
 
@@ -320,16 +321,49 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
     <main className={`w-full min-h-screen ${bgClass} relative transition-all duration-1000 ${isEntering ? 'opacity-0' : 'opacity-100'}`}>
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none"></div>
         
-        {/* Back Button (subtle) */}
-        <button
-          onClick={() => router.push('/dashboard')}
-          className="absolute top-6 left-6 text-zinc-600 hover:text-zinc-400 transition-colors z-50"
-        >
-          <ArrowLeft size={20} />
-        </button>
+      {/* Back Button (subtle) */}
+      <button
+        onClick={() => router.push('/dashboard')}
+        className="absolute top-6 left-6 text-zinc-600 hover:text-zinc-400 transition-colors z-50"
+      >
+        <ArrowLeft size={20} />
+      </button>
 
-        {/* 3-Column Grid Layout */}
-        <div className="relative z-10 h-screen grid grid-cols-3 gap-8 p-8">
+      <div className="relative z-10 px-8 py-8">
+        {/* TOP SECTION: Credit Score + Performance Engine */}
+        <div className="mb-8 max-w-7xl mx-auto">
+          <div className="mb-4 text-center">
+            <h1 className="text-2xl font-bold text-white mb-2">FOCUS HQ</h1>
+            <p className="text-zinc-400 text-sm">
+              Your performance engine. Check your stats, then lock in.
+            </p>
+          </div>
+
+          {/* Credit Score + Volatility Chart in Glass Container */}
+          <GlassCard className="p-8">
+            <div className="grid grid-cols-2 gap-8">
+              {/* Left: Reliability Score */}
+              <div>
+                <ReliabilityScoreHero 
+                  rating="AAA"
+                  percentage={92}
+                  trend="up"
+                />
+              </div>
+
+              {/* Right: Live Volatility Chart */}
+              <div>
+                <div className="label-text mb-4">FOCUS VOLATILITY (LIVE)</div>
+                <div className="h-[240px] bg-slate-950/40 rounded-lg border border-white/5 p-4">
+                  <VolatilityChart data={volatilityData} currentValue={currentFocusValue} />
+                </div>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+
+        {/* BOTTOM SECTION: 3-Column Grid Layout (Original Timer + Tasks) */}
+        <div className="h-[calc(100vh-440px)] grid grid-cols-3 gap-8 max-w-7xl mx-auto">
           
           {/* LEFT COLUMN: Vinyl Player */}
           <div className="flex flex-col justify-center">
@@ -381,6 +415,7 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
             </div>
           </div>
         </div>
+      </div>
 
       {/* Settlement Modal */}
       <SettlementModal

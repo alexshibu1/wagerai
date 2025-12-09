@@ -1,7 +1,7 @@
 import DashboardNavbar from "@/components/dashboard-navbar";
 import { redirect } from "next/navigation";
 import { createClient } from "../../../supabase/server";
-import PortfolioView from "@/components/portfolio-view";
+import MarketsView from "@/components/markets-view";
 import HabitTicker from "@/components/habit-ticker";
 
 export default async function Dashboard() {
@@ -18,7 +18,7 @@ export default async function Dashboard() {
   return (
     <>
       <DashboardNavbar />
-      <PortfolioView />
+      <MarketsView />
       <HabitTicker />
     </>
   );
