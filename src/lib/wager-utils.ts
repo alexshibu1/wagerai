@@ -59,23 +59,48 @@ export function generateChartData(wagers: Wager[], initialScore: number = 10000)
     .filter(w => w.status !== 'OPEN')
     .sort((a, b) => new Date(a.completed_at || a.created_at).getTime() - new Date(b.completed_at || b.created_at).getTime());
 
-  const data: ChartDataPoint[] = [
-    { date: format(subDays(new Date(), 30), 'MMM dd'), value: initialScore }
-  ];
-
+  // Generate 50 volatile data points spanning the last 30 days
+  const data: ChartDataPoint[] = [];
   let currentScore = initialScore;
+  const daysToGenerate = 50;
+  const startDate = subDays(new Date(), 30);
+  
+  // Create baseline points with random volatility
+  for (let i = 0; i < daysToGenerate; i++) {
+    const date = addDays(startDate, (i / daysToGenerate) * 30);
+    
+    // Add random volatility: ±5% swings with occasional spikes
+    const volatilityFactor = Math.random() < 0.15 
+      ? (Math.random() - 0.5) * 0.15  // 15% occasional spike
+      : (Math.random() - 0.5) * 0.05; // 5% normal variation
+    
+    currentScore = currentScore * (1 + volatilityFactor);
+    
+    data.push({
+      date: format(date, 'MMM dd'),
+      value: Math.round(currentScore)
+    });
+  }
 
+  // Overlay actual wager outcomes on top of the volatile baseline
   sortedWagers.forEach(wager => {
     const pnl = wager.status === 'WON' 
       ? wager.stake_amount * ((wager.pnl_percentage || 20) / 100)
       : -wager.stake_amount;
     
-    currentScore += pnl;
-    
-    data.push({
-      date: format(new Date(wager.completed_at || wager.created_at), 'MMM dd'),
-      value: currentScore
+    // Find closest data point and adjust it
+    const wagerDate = new Date(wager.completed_at || wager.created_at);
+    const closestPointIndex = data.findIndex(point => {
+      const pointDate = new Date(point.date + ', ' + new Date().getFullYear());
+      return Math.abs(pointDate.getTime() - wagerDate.getTime()) < 1000 * 60 * 60 * 24 * 2;
     });
+    
+    if (closestPointIndex !== -1 && closestPointIndex < data.length) {
+      // Apply PnL to this point and propagate forward
+      for (let i = closestPointIndex; i < data.length; i++) {
+        data[i].value += pnl;
+      }
+    }
   });
 
   return data;

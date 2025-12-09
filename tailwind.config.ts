@@ -57,7 +57,11 @@ const config = {
         'electric-teal': '#2dd4bf',
         'lavender': '#c084fc',
         'chalk': '#f4f4f5',
-        'midnight': '#09090b',
+        'midnight': '#050608',
+        'midnight-surface': '#0F111A',
+        'signal-green': '#00C805',
+        'signal-red': '#FF2E2E',
+        'arc-blue': '#4B91F7',
       },
       borderRadius: {
         lg: "var(--radius)",

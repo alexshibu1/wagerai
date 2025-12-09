@@ -91,8 +91,12 @@ export default function PortfolioView() {
     <>
       <main className="w-full min-h-screen pt-16">
         <div className="container mx-auto px-6 py-6 max-w-7xl">
-          {/* Header with Score and Rank Badge */}
-          <div className="glass-panel px-6 py-4 mb-6">
+          {/* Main Grid Layout: Content + Sidebar */}
+          <div className="grid grid-cols-[1fr_300px] gap-6">
+            {/* Main Content */}
+            <div>
+              {/* Header with Score and Rank Badge */}
+              <div className="glass-panel px-6 py-4 mb-6">
             <div className="flex items-center justify-between">
               {/* Left: Agency Score with Gradient */}
               <div>
@@ -146,7 +150,7 @@ export default function PortfolioView() {
                     onClick={() => setChartTimeframe(timeframe)}
                     className={`px-3 py-1 rounded text-xs font-mono font-bold transition-all ${
                       chartTimeframe === timeframe
-                        ? 'bg-lavender text-midnight'
+                        ? 'bg-arc-blue text-midnight'
                         : 'text-zinc-500 hover:text-white hover:bg-white/5'
                     }`}
                   >
@@ -222,10 +226,75 @@ export default function PortfolioView() {
           </div>
         </div>
 
+        {/* Rivalry Leaderboard Sidebar */}
+        <div>
+          <div className="glass-panel p-6 sticky top-20">
+            <div className="label-text mb-6 flex items-center gap-2">
+              <TrendingUp size={16} className="signal-green" />
+              TOP TRADERS
+            </div>
+            
+            <div className="space-y-3">
+              {[
+                { rank: 1, name: 'ALEX_K', score: 45200 },
+                { rank: 2, name: 'SARAH_M', score: 38900 },
+                { rank: 3, name: 'MIKE_L', score: 32100 },
+                { rank: 4, name: 'YOU', score: stats?.agency_score || 10000, isCurrentUser: true },
+                { rank: 5, name: 'EMMA_R', score: 24800 },
+              ].map((trader) => (
+                <div
+                  key={trader.rank}
+                  className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
+                    trader.isCurrentUser
+                      ? 'bg-arc-blue/10 border-arc-blue/30'
+                      : 'bg-white/[0.02] border-white/[0.05] hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center font-mono text-xs font-bold ${
+                        trader.rank === 1
+                          ? 'bg-signal-green/20 text-signal-green'
+                          : trader.rank === 2
+                          ? 'bg-zinc-400/20 text-zinc-400'
+                          : trader.rank === 3
+                          ? 'bg-yellow-600/20 text-yellow-600'
+                          : trader.isCurrentUser
+                          ? 'bg-arc-blue/20 text-arc-blue'
+                          : 'bg-white/[0.05] text-zinc-500'
+                      }`}
+                    >
+                      #{trader.rank}
+                    </div>
+                    <div>
+                      <div className={`font-mono text-xs font-bold ${
+                        trader.isCurrentUser ? 'text-arc-blue' : 'text-zinc-300'
+                      }`}>
+                        {trader.name}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="data-text text-sm font-bold">
+                    {formatCurrency(trader.score)}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Flame Icon for Competition */}
+            <div className="mt-6 pt-6 border-t border-white/[0.05] flex items-center justify-center gap-2 text-zinc-500">
+              <Flame size={16} className="text-signal-red" />
+              <span className="text-xs font-mono">Live Rankings</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
         {/* Floating Action Button */}
         <Button
           onClick={() => setIsExchangeOpen(true)}
-          className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-gradient-to-br from-electric-teal to-lavender hover:from-electric-teal/90 hover:to-lavender/90 text-midnight font-bold shadow-2xl z-50"
+          className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-signal-green hover:bg-signal-green/90 text-midnight font-bold shadow-[0_0_24px_rgba(0,200,5,0.5)] z-50"
         >
           <Plus size={28} />
         </Button>
