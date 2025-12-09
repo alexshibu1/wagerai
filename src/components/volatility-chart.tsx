@@ -10,58 +10,67 @@ interface VolatilityDataPoint {
 
 interface VolatilityChartProps {
   data: VolatilityDataPoint[];
+  currentValue?: number; // Optional: current focus value for real-time display
 }
 
-export default function VolatilityChart({ data }: VolatilityChartProps) {
+export default function VolatilityChart({ data, currentValue }: VolatilityChartProps) {
   // Determine if the trend is up or down based on last few points
   const recentData = data.slice(-5);
   const isUptrend = recentData.length >= 2 && 
     recentData[recentData.length - 1].value > recentData[0].value;
   
-  const strokeColor = isUptrend ? '#2dd4bf' : '#fda4af';
-  const gradientId = isUptrend ? 'upGradient' : 'downGradient';
+  const isPositive = currentValue !== undefined ? currentValue >= 120 : isUptrend;
+  const strokeColor = isPositive ? '#10b981' : '#ef4444';
+  const gradientId = 'volatilityGradient';
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
         <defs>
-          {/* Green gradient for uptrend */}
-          <linearGradient id="upGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#00FF94" stopOpacity={0.4}/>
-            <stop offset="95%" stopColor="#00FF94" stopOpacity={0}/>
-          </linearGradient>
-          {/* Rose gradient for downtrend */}
-          <linearGradient id="downGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#fda4af" stopOpacity={0.4}/>
-            <stop offset="95%" stopColor="#fda4af" stopOpacity={0}/>
+          {/* Gradient matching profile page style */}
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={isPositive ? '#10b981' : '#ef4444'} stopOpacity={0.4}/>
+            <stop offset="50%" stopColor={isPositive ? '#10b981' : '#ef4444'} stopOpacity={0.15}/>
+            <stop offset="100%" stopColor={isPositive ? '#10b981' : '#ef4444'} stopOpacity={0}/>
           </linearGradient>
         </defs>
         <XAxis 
           dataKey="time" 
           stroke="rgba(255, 255, 255, 0.2)"
-          style={{ fontSize: '10px', fontFamily: 'JetBrains Mono' }}
+          tick={{ fill: 'rgba(255, 255, 255, 0.4)', fontSize: 10, fontFamily: 'monospace' }}
           tickLine={false}
           axisLine={false}
           interval="preserveStartEnd"
         />
-        <YAxis 
-          stroke="rgba(255, 255, 255, 0.2)"
-          style={{ fontSize: '10px', fontFamily: 'JetBrains Mono' }}
-          tickLine={false}
-          axisLine={false}
-          domain={[0, 200]}
-        />
-        <Tooltip 
-          contentStyle={{
-            backgroundColor: 'rgba(5, 5, 5, 0.95)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '8px',
-            fontFamily: 'JetBrains Mono',
-            fontSize: '12px',
+        <Tooltip
+          content={({ active, payload }) => {
+            if (!active || !payload || !payload.length) return null;
+            const data = payload[0].payload;
+            return (
+              <div style={{
+                background: 'rgba(10, 10, 15, 0.98)',
+                border: `1px solid ${isPositive ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`,
+                borderRadius: '8px',
+                padding: '8px 12px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+              }}>
+                <div style={{ color: '#a1a1aa', fontSize: '11px', marginBottom: '4px', fontFamily: 'monospace' }}>
+                  {data.time}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                  <span style={{ color: strokeColor, fontFamily: 'monospace', fontSize: '18px', fontWeight: 'bold' }}>
+                    {data.value.toFixed(0)}
+                  </span>
+                  <span style={{ color: '#52525b', fontSize: '10px' }}>focus</span>
+                </div>
+              </div>
+            );
           }}
-          labelStyle={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '10px' }}
-          itemStyle={{ color: strokeColor }}
-          formatter={(value: number) => [`${value.toFixed(0)}`, 'Focus Value']}
+          cursor={{
+            stroke: strokeColor,
+            strokeWidth: 1,
+            strokeDasharray: '4 4',
+          }}
         />
         <Area 
           type="monotone" 
@@ -69,8 +78,14 @@ export default function VolatilityChart({ data }: VolatilityChartProps) {
           stroke={strokeColor}
           strokeWidth={2}
           fill={`url(#${gradientId})`}
-          animationDuration={300}
-          isAnimationActive={true}
+          animationDuration={500}
+          dot={false}
+          activeDot={{
+            r: 5,
+            fill: strokeColor,
+            stroke: '#0f172a',
+            strokeWidth: 2,
+          }}
         />
       </AreaChart>
     </ResponsiveContainer>

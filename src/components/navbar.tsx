@@ -11,21 +11,19 @@ export default async function Navbar() {
 
 
   return (
-    <nav className="w-full border-b border-gray-200 bg-white py-2">
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <Link href="/" prefetch className="text-xl font-bold">
-          Logo
+    <nav className="fixed top-0 w-full z-50 bg-transparent backdrop-blur-md border-b border-white/10 py-4">
+      <div className="container mx-auto px-6 flex justify-between items-center">
+        <Link href="/" prefetch className="text-2xl font-bold text-white tracking-tight">
+          WAGER TERMINAL
         </Link>
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-6 items-center">
           {user ? (
             <>
               <Link
-                href="/dashboard"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                href="/markets"
+                className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
               >
-                <Button>
-                  Dashboard
-                </Button>
+                Markets
               </Link>
               <UserProfile  />
             </>
@@ -33,15 +31,14 @@ export default async function Navbar() {
             <>
               <Link
                 href="/sign-in"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
               >
                 Sign In
               </Link>
-              <Link
-                href="/sign-up"
-                className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800"
-              >
-                Sign Up
+              <Link href="/sign-up">
+                <Button size="sm" className="px-6">
+                  Get Started
+                </Button>
               </Link>
             </>
           )}

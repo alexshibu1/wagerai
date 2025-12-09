@@ -2,21 +2,26 @@ import type { Config } from "tailwindcss";
 
 const config = {
   darkMode: ["class"],
+
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
   ],
+
   prefix: "",
+
   theme: {
     container: {
       center: true,
       padding: "2rem",
+
       screens: {
         "2xl": "1400px",
       },
     },
+
     extend: {
       colors: {
         border: "hsl(var(--border))",
@@ -24,50 +29,67 @@ const config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
+
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
+
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
         },
+
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
         },
+
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        'soft-mint': '#6ee7b7',
-        'soft-rose': '#fda4af',
-        'electric-teal': '#2dd4bf',
-        'lavender': '#c084fc',
-        'chalk': '#f4f4f5',
-        'midnight': '#050608',
-        'midnight-surface': '#0F111A',
-        'signal-green': '#00C805',
-        'signal-red': '#FF2E2E',
-        'arc-blue': '#4B91F7',
+
+        "soft-mint": "#4ade80",
+        "soft-rose": "#fb7185",
+        "coral-rose": "#fb7185",
+        "electric-teal": "#0cca00",
+        lavender: "#c084fc",
+        chalk: "#fafafa",
+        "zinc-muted": "#a1a1aa",
+        midnight: "#09090b",
+        "midnight-surface": "#09090b",
+        "signal-green": "#4ade80",
+        "signal-red": "#fb7185",
+        "arc-blue": "#4B91F7",
+        
+        // Future Finance Theme
+        "obsidian": "#030014",
+        "electric-purple": "#7c3aed",
+        "cyan-bright": "#06b6d4",
       },
+
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
@@ -77,18 +99,32 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        // Infinite horizontal scroll (for ticker)
         marquee: {
-          '0%': { transform: 'translateX(0)' },
-          '100%': { transform: 'translateX(-50%)' },
+          "0%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-100%)" },
+        },
+        // Subtle vertical float (for cards)
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-20px)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "1", filter: "drop-shadow(0 0 20px rgba(16, 185, 129, 0.4))" },
+          "50%": { opacity: "0.8", filter: "drop-shadow(0 0 40px rgba(16, 185, 129, 0.6))" },
         },
       },
+
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        marquee: "marquee 60s linear infinite",
+        marquee: "marquee 25s linear infinite",
+        float: "float 6s ease-in-out infinite",
+        "pulse-glow": "pulse-glow 3s ease-in-out infinite",
       },
     },
   },
+
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
 
