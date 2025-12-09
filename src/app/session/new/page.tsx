@@ -67,7 +67,7 @@ export default function NewSessionPage() {
       
       {/* Close Button */}
       <button
-        onClick={() => router.push('/dashboard')}
+        onClick={() => router.push('/markets')}
         className="absolute top-6 right-6 z-50 w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all"
       >
         <X size={20} className="text-zinc-400" />

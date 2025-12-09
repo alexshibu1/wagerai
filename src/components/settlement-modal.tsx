@@ -23,6 +23,7 @@ interface VolatilityDataPoint {
 interface SettlementModalProps {
   open: boolean;
   onClose: () => void;
+  onSettle: (success: boolean) => void;
   tasks: Task[];
   baseWager: number;
   volatilityData: VolatilityDataPoint[];
@@ -32,6 +33,7 @@ interface SettlementModalProps {
 export default function SettlementModal({
   open,
   onClose,
+  onSettle,
   tasks,
   baseWager,
   volatilityData,
@@ -202,7 +204,10 @@ export default function SettlementModal({
         {/* Action Button */}
         <div className="mt-6 flex justify-center">
           <Button
-            onClick={onClose}
+            onClick={() => {
+              onSettle(isProfit);
+              onClose();
+            }}
             className="w-full max-w-md bg-neon-mint hover:bg-neon-mint/90 text-black font-bold uppercase tracking-[0.2em] text-sm h-12"
           >
             CASH OUT & CLOSE

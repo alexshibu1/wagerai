@@ -77,6 +77,11 @@ const config = {
         "signal-green": "#4ade80",
         "signal-red": "#fb7185",
         "arc-blue": "#4B91F7",
+        
+        // Future Finance Theme
+        "obsidian": "#030014",
+        "electric-purple": "#7c3aed",
+        "cyan-bright": "#06b6d4",
       },
 
       borderRadius: {
@@ -87,40 +92,35 @@ const config = {
 
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
-
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
-
+        // Infinite horizontal scroll (for ticker)
         marquee: {
-          "0%": {
-            transform: "translateX(0)",
-          },
-
-          "100%": {
-            transform: "translateX(-50%)",
-          },
+          "0%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-100%)" },
+        },
+        // Subtle vertical float (for cards)
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-20px)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "1", filter: "drop-shadow(0 0 20px rgba(16, 185, 129, 0.4))" },
+          "50%": { opacity: "0.8", filter: "drop-shadow(0 0 40px rgba(16, 185, 129, 0.6))" },
         },
       },
 
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        marquee: "marquee 60s linear infinite",
+        marquee: "marquee 25s linear infinite",
+        float: "float 6s ease-in-out infinite",
+        "pulse-glow": "pulse-glow 3s ease-in-out infinite",
       },
     },
   },

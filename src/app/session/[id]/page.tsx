@@ -12,6 +12,7 @@ import ReliabilityScoreHero from '@/components/reliability-score-hero';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/wager-utils';
+import { useWager } from '@/hooks/use-wager';
 
 interface Task {
   id: string;
@@ -35,6 +36,7 @@ interface DeepWorkBlock {
 
 export default function FocusSessionPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const { isLockedIn, activeWager, isLoaded, settleWager } = useWager();
   
   // Vibe mode state
   const [vibeMode, setVibeMode] = useState<'market' | 'cozy'>('market');
@@ -42,6 +44,13 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
   // Initial load animation state
   const [isEntering, setIsEntering] = useState(true);
   
+  // Redirect if not locked in
+  useEffect(() => {
+    if (isLoaded && !isLockedIn) {
+      router.push('/markets');
+    }
+  }, [isLoaded, isLockedIn, router]);
+
   // Store active session ID in localStorage
   useEffect(() => {
     localStorage.setItem('activeSessionId', params.id);
@@ -55,15 +64,6 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
     };
   }, [params.id]);
   
-  // Get stake amount from session (default to 50 if not set)
-  const [stakeAmount] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('currentStakeAmount');
-      return stored ? parseInt(stored) : 50;
-    }
-    return 50;
-  });
-  
   // Core State
   const [tasks, setTasks] = useState<Task[]>([
     { id: '1', title: 'Research competitor strategies', completed: false, timebox: 'morning' },
@@ -71,15 +71,14 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
     { id: '3', title: 'Review and revise budget', completed: false, timebox: 'closing' },
   ]);
 
-  // 12-Hour Market Timer (starts at 12 hours)
+  // Market Timer
   const [timeRemaining, setTimeRemaining] = useState({
-    hours: 12,
+    hours: 0,
     minutes: 0,
     seconds: 0,
     isExpired: false,
   });
   
-  const baseWager = 100;
   const [marketOpen, setMarketOpen] = useState(true);
 
   // Deep Work Blocks (3 x 90-minute blocks)
@@ -95,41 +94,47 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
   ]);
   const [currentFocusValue, setCurrentFocusValue] = useState(100);
   const sessionStartTime = useRef(Date.now());
-  const lastUpdateTime = useRef(Date.now());
   const updateCounter = useRef(0);
 
   // Settlement Modal
   const [showSettlement, setShowSettlement] = useState(false);
 
-  // 12-Hour Timer Logic
+  // Timer Logic synced with activeWager
   useEffect(() => {
-    if (!marketOpen) return;
+    if (!marketOpen || !activeWager) return;
+
+    const calculateTime = () => {
+      const now = Date.now();
+      const endTime = activeWager.startTime + (activeWager.duration * 60 * 1000);
+      const diff = endTime - now;
+
+      if (diff <= 0) {
+        return { hours: 0, minutes: 0, seconds: 0, isExpired: true };
+      }
+
+      return {
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / 1000 / 60) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
+        isExpired: false
+      };
+    };
+
+    // Initial calculation
+    setTimeRemaining(calculateTime());
 
     const interval = setInterval(() => {
-      setTimeRemaining(prev => {
-        let { hours, minutes, seconds } = prev;
-        
-        if (seconds > 0) {
-          seconds--;
-        } else if (minutes > 0) {
-          minutes--;
-          seconds = 59;
-        } else if (hours > 0) {
-          hours--;
-          minutes = 59;
-          seconds = 59;
-        } else {
-          clearInterval(interval);
-          handleCloseMarket();
-          return { ...prev, isExpired: true };
-        }
-        
-        return { ...prev, hours, minutes, seconds };
-      });
+      const remaining = calculateTime();
+      setTimeRemaining(remaining);
+      
+      if (remaining.isExpired) {
+        clearInterval(interval);
+        handleCloseMarket();
+      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [marketOpen]);
+  }, [marketOpen, activeWager]);
 
   // Volatility Engine - More Aggressive & Responsive
   useEffect(() => {
@@ -298,15 +303,9 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
   };
 
   const handleForfeit = () => {
-    if (confirm('Are you sure you want to forfeit this wager? You will lose $' + baseWager)) {
-      router.push('/dashboard');
+    if (confirm('Are you sure you want to forfeit this wager? You will lose $' + (activeWager?.amount || 50))) {
+      router.push('/markets');
     }
-  };
-
-  const formatDeepWorkTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
   const activeDeepWorkCount = deepWorkBlocks.filter(b => b.active).length;
@@ -316,6 +315,10 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
   const bgClass = vibeMode === 'cozy' 
     ? 'bg-gradient-to-br from-orange-900 to-amber-900' 
     : 'bg-slate-950';
+
+  if (!isLoaded || !isLockedIn) {
+    return null; // Or a loading spinner
+  }
 
   return (
     <main className={`w-full min-h-screen ${bgClass} relative transition-all duration-1000 ${isEntering ? 'opacity-0' : 'opacity-100'}`}>
@@ -389,8 +392,10 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
               {/* Contract Value Badge (Enhanced) */}
               <div className="flex items-center justify-center gap-4 mb-8">
                 <div className="px-6 py-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10">
-                  <span className="text-xs text-zinc-500 uppercase tracking-wider mr-2">Contract Value:</span>
-                  <span className="text-xl font-bold font-mono text-emerald-400">${stakeAmount || 50}.00</span>
+                  <span className="text-xs text-zinc-500 uppercase tracking-wider mr-2">Potential Payout:</span>
+                  <span className="text-xl font-bold font-mono text-emerald-400">
+                    ${((activeWager?.amount || 50) * 2).toFixed(2)}
+                  </span>
                 </div>
               </div>
 
@@ -420,9 +425,10 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
       {/* Settlement Modal */}
       <SettlementModal
         open={showSettlement}
-        onClose={() => router.push('/dashboard')}
+        onClose={() => router.push('/markets')}
+        onSettle={settleWager}
         tasks={tasks}
-        baseWager={baseWager}
+        baseWager={activeWager?.amount || 50}
         volatilityData={volatilityData}
         deepWorkBonus={deepWorkBonus}
       />

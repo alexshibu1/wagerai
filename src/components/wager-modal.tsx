@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Loader2, CheckCircle2 } from 'lucide-react';
+import { X, CheckCircle2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { USER_STATS } from '@/lib/mock-data';
+import { WagerTrigger } from './wager-trigger';
+import { useWager } from '@/hooks/use-wager';
 
 interface WagerModalProps {
   isOpen: boolean;
@@ -14,59 +16,24 @@ interface WagerModalProps {
 
 export default function WagerModal({ isOpen, onClose }: WagerModalProps) {
   const router = useRouter();
+  const { placeWager } = useWager();
   
   // Form state
   const [contractName, setContractName] = useState('');
   const [selectedDuration, setSelectedDuration] = useState<25 | 50 | 90>(50);
   const [stakeAmount, setStakeAmount] = useState([35]);
   
-  // Processing states
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  
-  // Apple Pay style "Hold to Lock In" handler
-  const handleLockIn = () => {
+  const handleLockIn = async () => {
     if (!contractName.trim()) return;
     
-    setIsProcessing(true);
+    // Use the hook to place the wager
+    await placeWager(contractName, stakeAmount[0], selectedDuration);
     
-    // Spinner (1s) → Checkmark (0.5s) → Navigate
-    setTimeout(() => {
-      setShowSuccess(true);
-      setIsProcessing(false);
-      
-      // Store session data
-      const sessionId = `session-${Date.now()}`;
-      localStorage.setItem('activeSessionId', sessionId);
-      localStorage.setItem('currentStakeAmount', stakeAmount[0].toString());
-      localStorage.setItem('currentContractName', contractName);
-      
-      // Navigate after success animation
-      setTimeout(() => {
-        onClose();
-        router.push(`/session/${sessionId}`);
-      }, 800);
-    }, 1000);
+    // Close modal (navigation is handled by hook, but we can close modal here)
+    onClose();
   };
   
   if (!isOpen) return null;
-  
-  // Success State (Checkmark)
-  if (showSuccess) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-        <div className="relative z-20 flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-[0_0_60px_rgba(16,185,129,0.6)]">
-            <CheckCircle2 size={48} className="text-white" />
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-emerald-400 font-mono">LOCKED IN</div>
-            <div className="text-sm text-zinc-500 mt-1">Entering focus mode...</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
   
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
@@ -150,29 +117,12 @@ export default function WagerModal({ isOpen, onClose }: WagerModalProps) {
               </div>
             </div>
             
-            {/* Apple Pay Style Trigger Button */}
-            <button
-              onClick={handleLockIn}
-              disabled={isProcessing || !contractName.trim()}
-              className="w-full relative group disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-              
-              {/* Button content */}
-              <div className="relative bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl py-5 px-6 shadow-[0_0_40px_rgba(16,185,129,0.4)] hover:shadow-[0_0_60px_rgba(16,185,129,0.6)] transition-all">
-                <div className="flex items-center justify-center gap-3">
-                  {isProcessing ? (
-                    <>
-                      <Loader2 size={24} className="text-white animate-spin" />
-                      <span className="text-white font-bold text-lg">Processing...</span>
-                    </>
-                  ) : (
-                    <span className="text-white font-bold text-lg">Hold to Lock In</span>
-                  )}
-                </div>
-              </div>
-            </button>
+            {/* Wager Trigger Component */}
+            <WagerTrigger 
+              amount={stakeAmount[0]}
+              onConfirm={handleLockIn}
+              disabled={!contractName.trim()}
+            />
             
             <p className="text-xs text-zinc-600 text-center mt-4">
               Secured by biometric authentication

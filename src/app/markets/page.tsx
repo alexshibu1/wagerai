@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../supabase/server";
 import TerminalLayout from "@/components/terminal-layout";
-import ProfileView from "@/components/profile-view";
+import MarketsContent from "@/components/markets-content";
 
-export default async function Profile() {
+export default async function Markets() {
   const supabase = await createClient();
 
   const {
@@ -16,7 +16,7 @@ export default async function Profile() {
 
   return (
     <TerminalLayout>
-      <ProfileView />
+      <MarketsContent />
     </TerminalLayout>
   );
 }
