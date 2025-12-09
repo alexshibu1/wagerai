@@ -98,7 +98,7 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
                     onClick={() => setAssetClass(key)}
                     className={`p-4 rounded-lg transition-all ${
                       assetClass === key
-                        ? 'bg-lavender text-midnight'
+                        ? 'bg-arc-blue text-midnight'
                         : 'bg-transparent text-white hover:bg-white/[0.05]'
                     }`}
                   >
@@ -160,7 +160,7 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
               min={100}
               max={5000}
               step={100}
-              className="w-full [&_[role=slider]]:bg-electric-teal [&_[role=slider]]:border-electric-teal [&_[role=slider]]:shadow-[0_0_12px_rgba(45,212,191,0.6)] [&_[role=slider]]:w-5 [&_[role=slider]]:h-5"
+              className="w-full [&_[role=slider]]:bg-signal-green [&_[role=slider]]:border-signal-green [&_[role=slider]]:shadow-[0_0_12px_rgba(0,200,5,0.6)] [&_[role=slider]]:w-5 [&_[role=slider]]:h-5"
             />
             <div className="flex justify-between mt-3 label-text opacity-60">
               <span>$100</span>
@@ -168,11 +168,11 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
             </div>
           </div>
 
-          {/* Execute Button - Full Width Neon Green Gradient */}
+          {/* Execute Button - Polymarket Signal Green */}
           <Button
             onClick={handleExecute}
             disabled={!title.trim()}
-            className="w-full bg-gradient-to-r from-electric-teal to-lavender hover:from-electric-teal/90 hover:to-lavender/90 text-midnight font-bold uppercase tracking-[0.25em] text-sm h-14 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(45,212,191,0.3)] transition-all"
+            className="w-full bg-signal-green hover:bg-signal-green/90 text-midnight font-bold uppercase tracking-[0.25em] text-sm h-14 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(0,200,5,0.4)] transition-all"
           >
             EXECUTE ORDER
           </Button>
