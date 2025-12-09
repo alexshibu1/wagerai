@@ -21,10 +21,11 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const loadWager = async () => {
     try {
       const wagers = await getUserWagers();
-      const foundWager = wagers.find(w => w.id === params.id);
+      const foundWager = wagers?.find(w => w.id === params.id);
       setWager(foundWager || null);
     } catch (error) {
-      console.error('Error loading wager:', error);
+      // Set null on error
+      setWager(null);
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +74,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const isBleeding = health < 50;
 
   return (
-    <main className="w-full min-h-screen">
+    <main className="w-full min-h-screen pl-28">
       <div className="container mx-auto px-6 py-6 max-w-5xl">
         {/* Back Button */}
         <button

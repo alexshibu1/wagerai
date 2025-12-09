@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Zap } from 'lucide-react';
 import VinylPlayer from '@/components/vinyl-player';
+import VibeSwitcher from '@/components/vibe-switcher';
 import TimeboxedTaskList from '@/components/timeboxed-task-list';
 import VolatilityChart from '@/components/volatility-chart';
 import SettlementModal from '@/components/settlement-modal';
@@ -33,6 +34,15 @@ interface DeepWorkBlock {
 
 export default function FocusSessionPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  
+  // Store active session ID in localStorage
+  useEffect(() => {
+    localStorage.setItem('activeSessionId', params.id);
+    
+    return () => {
+      localStorage.removeItem('activeSessionId');
+    };
+  }, [params.id]);
   
   // Core State
   const [tasks, setTasks] = useState<Task[]>([
@@ -295,40 +305,39 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
         </button>
 
         <div className="container mx-auto max-w-7xl">
-          {/* Top Section: Timer & Stats */}
-          <div className="glass-panel p-6 mb-6">
-            <div className="flex items-center justify-between">
-              {/* Left: Timer with Gradient */}
-              <div>
-                <div className="label-text mb-2">MARKET CLOSES IN</div>
-                <div className="data-text text-6xl font-bold gradient-text">
-                  {String(timeRemaining.hours).padStart(2, '0')}:
-                  {String(timeRemaining.minutes).padStart(2, '0')}:
-                  {String(timeRemaining.seconds).padStart(2, '0')}
-                </div>
+          {/* Top Section: Active Contract Hero */}
+          <div className="glass-panel p-8 mb-6 bg-gradient-to-b from-slate-950/40 to-slate-950/60 relative overflow-hidden">
+            {/* Subtle glow effect */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div className="relative z-10">
+              {/* Active Contract Label */}
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                <div className="label-text text-emerald-400">ACTIVE CONTRACT</div>
               </div>
+              
+              <div className="flex items-center justify-between">
+                {/* Left: Timer with Contract Info */}
+                <div>
+                  <div className="data-text text-6xl font-bold gradient-text mb-3">
+                    {String(timeRemaining.hours).padStart(2, '0')}:
+                    {String(timeRemaining.minutes).padStart(2, '0')}:
+                    {String(timeRemaining.seconds).padStart(2, '0')}
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-zinc-400">
+                    <span>Capital at stake: <span className="text-emerald-400 font-bold">{formatCurrency(baseWager)}</span></span>
+                    <span className="text-zinc-700">•</span>
+                    <span>Focus Value: <span className="text-white font-bold">{currentFocusValue.toFixed(0)}</span></span>
+                  </div>
+                </div>
 
-              {/* Right: Stats */}
-              <div className="flex gap-8 items-center">
-                <div className="text-right">
-                  <div className="label-text mb-1">STAKE</div>
-                  <div className="data-text text-2xl font-bold soft-mint">
-                    {formatCurrency(baseWager)}
-                  </div>
-                </div>
-                <div className="h-12 w-px bg-white/10"></div>
-                <div className="text-right">
-                  <div className="label-text mb-1">FOCUS VALUE</div>
-                  <div className="data-text text-2xl font-bold">
-                    {currentFocusValue.toFixed(0)}
-                  </div>
-                </div>
-                <div className="h-12 w-px bg-white/10"></div>
+                {/* Right: Close Market Button */}
                 <Button
                   onClick={handleCloseMarket}
-                  className="bg-soft-mint hover:bg-soft-mint/90 text-black font-bold uppercase tracking-wider px-6"
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold uppercase tracking-wider px-8 py-6 h-auto shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all hover:shadow-[0_0_40px_rgba(16,185,129,0.5)]"
                 >
-                  CLOSE MARKET
+                  <span className="text-lg">SETTLE CONTRACT</span>
                 </Button>
               </div>
             </div>
@@ -408,9 +417,12 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
             </div>
           </div>
 
-          {/* Bottom: Vinyl Player & Forfeit */}
+          {/* Bottom: Vinyl Player, Vibe Switcher & Forfeit */}
           <div className="flex items-end justify-between">
-            <VinylPlayer />
+            <div className="flex gap-4">
+              <VinylPlayer />
+              <VibeSwitcher />
+            </div>
 
             <Button
               onClick={handleForfeit}

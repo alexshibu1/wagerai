@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../../supabase/server";
 import PortfolioView from "@/components/portfolio-view";
 import HabitTicker from "@/components/habit-ticker";
-import MarketTicker from "@/components/market-ticker";
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -21,7 +20,6 @@ export default async function Dashboard() {
       <DashboardNavbar />
       <PortfolioView />
       <HabitTicker />
-      <MarketTicker />
     </>
   );
 }

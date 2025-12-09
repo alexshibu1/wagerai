@@ -47,17 +47,17 @@ export default function PositionCard({ wager, onComplete, onFail, showLocked }: 
   };
 
   return (
-    <div className="grid grid-cols-[100px_1fr_140px_120px_100px] gap-4 px-4 h-14 items-center border-b border-white/[0.05] hover:bg-white/[0.02] transition-colors">
+    <div className="grid grid-cols-[100px_1fr_140px_120px_100px] gap-4 px-4 h-14 items-center border-b border-white/[0.05] hover:bg-white/[0.02] transition-colors group">
       {/* Ticker Badge */}
       <div>
-        <span className="inline-block bg-zinc-800 text-white data-text text-xs px-2 py-0.5 rounded">
+        <span className="inline-block bg-slate-950/50 border border-white/10 text-emerald-400 data-text text-xs font-bold px-2 py-0.5 rounded">
           {config.symbol}
         </span>
       </div>
 
       {/* Task Name */}
       <div className="min-w-0">
-        <div className="text-white text-sm font-medium truncate">{wager.title}</div>
+        <div className="text-zinc-200 text-sm font-medium truncate group-hover:text-white transition-colors">{wager.title}</div>
         {isYearWager && isOpen && (
           <div className="health-bar mt-1">
             <div 
@@ -72,7 +72,7 @@ export default function PositionCard({ wager, onComplete, onFail, showLocked }: 
       </div>
 
       {/* Countdown Timer */}
-      <div className="data-text text-sm text-zinc-400">
+      <div className={`data-text text-sm font-mono ${timeRemaining.hours === 0 && timeRemaining.minutes < 10 ? 'text-red-400' : 'text-zinc-400'}`}>
         {isOpen && !showLocked ? (
           <>
             {timeRemaining.days > 0 && `${timeRemaining.days}d `}
@@ -86,7 +86,7 @@ export default function PositionCard({ wager, onComplete, onFail, showLocked }: 
       </div>
 
       {/* Stake Amount */}
-      <div className="data-text text-sm text-white">
+      <div className="data-text text-sm text-emerald-400 font-bold">
         {formatCurrency(wager.stake_amount)}
       </div>
 

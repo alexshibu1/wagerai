@@ -32,7 +32,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-[#050608] text-[#f4f4f5];
+    @apply bg-[#020617] text-[#fafafa];
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -40,42 +40,55 @@
     position: relative;
   }
   
-  /* Film Grain Texture Overlay - Midnight Grain Style */
+  /* Film Grain Texture Overlay - Arc Night Style */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.05;
+    opacity: 0.04;
     pointer-events: none;
     z-index: 50;
     mix-blend-mode: overlay;
   }
   
-  /* Ambient Mesh Blobs - Top-Center Spotlight */
+  /* Ambient Mesh Gradient - Indigo & Teal Orbs */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
     background: 
-      radial-gradient(circle at 50% 20%, rgba(75, 145, 247, 0.15) 0%, transparent 50%),
-      radial-gradient(circle at 50% 20%, rgba(0, 200, 5, 0.1) 0%, transparent 60%);
+      radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.20) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(20, 184, 166, 0.20) 0%, transparent 50%);
     filter: blur(120px);
     pointer-events: none;
     z-index: 0;
-    animation: aurora-drift 20s ease-in-out infinite alternate;
+    animation: ambient-pulse 20s ease-in-out infinite alternate;
   }
   
-  @keyframes aurora-drift {
+  @keyframes ambient-pulse {
     0% {
-      opacity: 0.15;
+      opacity: 0.3;
     }
     50% {
-      opacity: 0.2;
+      opacity: 0.5;
     }
     100% {
-      opacity: 0.15;
+      opacity: 0.3;
     }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.6);
+    }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
   }
   
   .font-mono {
@@ -84,12 +97,12 @@
 }
 
 @layer utilities {
-  /* Arc Glass - Polymarket Style */
+  /* High-Fidelity Glass - Arc Night Style */
   .glass-panel {
-    background: linear-gradient(180deg, rgba(20, 20, 25, 0.7) 0%, rgba(10, 10, 15, 0.7) 100%);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
+    background: rgba(2, 6, 23, 0.50);
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
     box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
     position: relative;
     z-index: 1;
@@ -104,18 +117,18 @@
   
   /* Soft Gradient Text for Large Numbers */
   .gradient-text {
-    @apply bg-gradient-to-br from-zinc-100 via-zinc-100 to-zinc-400 bg-clip-text text-transparent;
+    @apply bg-gradient-to-br from-chalk via-chalk to-zinc-400 bg-clip-text text-transparent;
     font-weight: 600;
     letter-spacing: -0.02em;
   }
   
-  /* Arc Typography System */
+  /* Financial Terminal Typography */
   .label-text {
     @apply font-sans text-[10px] uppercase tracking-[0.15em] text-zinc-500 font-semibold;
   }
   
   .data-text {
-    @apply font-mono text-zinc-100 font-normal;
+    @apply font-mono text-chalk font-normal;
     letter-spacing: -0.01em;
   }
   
@@ -131,74 +144,78 @@
     transition: width 0.3s ease, background-color 0.3s ease;
   }
   
-  /* Pastel Color System - Arc Night Palette */
+  /* Financial Pastels Color System */
   .soft-mint {
-    color: #6ee7b7;
+    color: #4ade80;
   }
   
   .bg-soft-mint {
-    background-color: #6ee7b7;
+    background-color: #4ade80;
   }
   
-  /* Soft Rose (Danger) */
+  /* Rose Coral (Loss/Risk) */
+  .coral-rose {
+    color: #fb7185;
+  }
+  
+  .bg-coral-rose {
+    background-color: #fb7185;
+  }
+  
+  /* Chalk White Text */
+  .chalk {
+    color: #fafafa;
+  }
+  
+  .bg-chalk {
+    background-color: #fafafa;
+  }
+  
+  /* Zinc Muted Text */
+  .zinc-text {
+    color: #a1a1aa;
+  }
+  
+  /* Legacy support - map to new Financial Pastels */
   .soft-rose {
-    color: #fda4af;
+    color: #fb7185;
   }
   
   .bg-soft-rose {
-    background-color: #fda4af;
+    background-color: #fb7185;
   }
   
-  /* Electric Teal (Primary Success) */
   .electric-teal {
-    color: #2dd4bf;
+    color: #4ade80;
   }
   
   .bg-electric-teal {
-    background-color: #2dd4bf;
+    background-color: #4ade80;
   }
   
-  /* Lavender (Accent/Active) */
+  .signal-green {
+    color: #4ade80;
+  }
+  
+  .bg-signal-green {
+    background-color: #4ade80;
+  }
+  
+  .signal-red {
+    color: #fb7185;
+  }
+  
+  .bg-signal-red {
+    background-color: #fb7185;
+  }
+  
+  /* Keep lavender and arc-blue as accents */
   .lavender {
     color: #c084fc;
   }
   
   .bg-lavender {
     background-color: #c084fc;
-  }
-  
-  /* Legacy support */
-  .coral-rose {
-    color: #fda4af;
-  }
-  
-  .bg-coral-rose {
-    background-color: #fda4af;
-  }
-  
-  .neon-mint {
-    color: #6ee7b7;
-  }
-  
-  .bg-neon-mint {
-    background-color: #6ee7b7;
-  }
-  
-  /* Midnight Grain Palette */
-  .signal-green {
-    color: #00C805;
-  }
-  
-  .bg-signal-green {
-    background-color: #00C805;
-  }
-  
-  .signal-red {
-    color: #FF2E2E;
-  }
-  
-  .bg-signal-red {
-    background-color: #FF2E2E;
   }
   
   .arc-blue {
@@ -209,8 +226,16 @@
     background-color: #4B91F7;
   }
   
+  .neon-mint {
+    color: #4ade80;
+  }
+  
+  .bg-neon-mint {
+    background-color: #4ade80;
+  }
+  
   .midnight-surface {
-    background-color: #0F111A;
+    background-color: #09090b;
   }
   
   /* Holographic Glow Effect */
