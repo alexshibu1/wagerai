@@ -21,7 +21,7 @@ export default function DashboardNavbar() {
     <nav className="w-full border-b border-white/[0.05] glass-panel backdrop-blur-2xl py-3 sticky top-0 z-50">
       <div className="container mx-auto px-6 flex justify-between items-center">
         <div className="flex items-center gap-8">
-          <Link href="/dashboard" prefetch className="data-text text-xl font-bold neon-mint">
+          <Link href="/dashboard" prefetch className="data-text text-xl font-bold electric-teal">
             WAGER
           </Link>
           <div className="flex gap-1">

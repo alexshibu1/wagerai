@@ -38,7 +38,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 },
-      colors: ['#00FF94', '#00D97E', '#00C805'],
+      colors: ['#2dd4bf', '#6ee7b7', '#c084fc'],
     });
 
     // In a real app, this would call an API to log progress
@@ -110,7 +110,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
             <div className="text-right">
               <div className="label-text mb-1">STAKE</div>
-              <div className="data-text text-3xl font-bold neon-mint">
+              <div className="data-text text-3xl font-bold electric-teal">
                 {formatCurrency(wager.stake_amount)}
               </div>
             </div>
@@ -120,7 +120,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
           <div>
             <div className="flex items-center justify-between mb-2">
               <div className="label-text">PROJECT HEALTH</div>
-              <div className={`data-text text-sm font-bold ${isBleeding ? 'text-red-500' : 'neon-mint'}`}>
+              <div className={`data-text text-sm font-bold ${isBleeding ? 'text-soft-rose' : 'electric-teal'}`}>
                 {health.toFixed(0)}%
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                 className="health-bar-fill h-full rounded-full transition-all duration-500" 
                 style={{
                   width: `${health}%`,
-                  backgroundColor: isBleeding ? '#FF4500' : '#00FF94'
+                  backgroundColor: isBleeding ? '#fda4af' : '#2dd4bf'
                 }}
               />
             </div>
@@ -206,7 +206,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
               </div>
               <Button
                 onClick={handleLogProgress}
-                className="bg-neon-mint hover:bg-neon-mint/90 text-black font-bold uppercase tracking-wider px-8 h-12"
+                className="bg-electric-teal hover:bg-electric-teal/90 text-midnight font-bold uppercase tracking-wider px-8 h-12"
               >
                 <DollarSign size={16} className="mr-2" />
                 LOG PROGRESS
@@ -228,18 +228,18 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                   key={idx}
                   className={`flex items-center justify-between p-4 rounded-lg border ${
                     activity.status === 'completed'
-                      ? 'border-neon-mint/30 bg-neon-mint/5'
+                      ? 'border-electric-teal/30 bg-electric-teal/5'
                       : activity.status === 'missed'
-                      ? 'border-red-500/30 bg-red-500/5'
+                      ? 'border-soft-rose/30 bg-soft-rose/5'
                       : 'border-white/[0.08]'
                   }`}
                 >
                   <div className="data-text text-sm">{activity.date}</div>
                   <div className={`label-text text-xs uppercase ${
                     activity.status === 'completed'
-                      ? 'text-neon-mint'
+                      ? 'text-electric-teal'
                       : activity.status === 'missed'
-                      ? 'text-red-500'
+                      ? 'text-soft-rose'
                       : 'text-zinc-500'
                   }`}>
                     {activity.status}

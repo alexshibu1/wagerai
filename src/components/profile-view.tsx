@@ -60,7 +60,7 @@ export default function ProfileView() {
           <div className="flex items-center justify-around">
             <div className="text-center">
               <div className="label-text mb-2">Win Rate</div>
-              <div className="data-text text-3xl font-bold text-[#00C805] flex items-center gap-2">
+              <div className="data-text text-3xl font-bold text-electric-teal flex items-center gap-2">
                 <TrendingUp size={24} />
                 {stats?.win_rate.toFixed(1) || '0.0'}%
               </div>

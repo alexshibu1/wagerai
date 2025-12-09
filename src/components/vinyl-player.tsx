@@ -37,7 +37,7 @@ export default function VinylPlayer() {
         className="w-full bg-white/5 hover:bg-white/10 transition-colors"
       >
         {isPlaying ? (
-          <Pause size={14} className="text-neon-mint" />
+          <Pause size={14} className="text-electric-teal" />
         ) : (
           <Play size={14} className="text-white" />
         )}

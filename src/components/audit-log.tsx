@@ -44,7 +44,7 @@ export default function AuditLog({ wagers }: AuditLogProps) {
 
             {/* Right: P&L (HERO) */}
             <div className="text-right shrink-0">
-              <div className={`data-text text-2xl font-bold flex items-center gap-2 ${isWin ? 'text-[#00C805]' : 'text-[#FF4500]'}`}>
+              <div className={`data-text text-2xl font-bold flex items-center gap-2 ${isWin ? 'text-electric-teal' : 'text-soft-rose'}`}>
                 {isWin ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
                 {isWin ? '+' : ''}{formatCurrency(pnl)}
               </div>
