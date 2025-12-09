@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 96%;
+    --primary: 142 76% 60%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 240 6% 10%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 240 6% 10%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 142 76% 60%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 351 89% 71%;
+    --destructive-foreground: 0 0% 96%;
+    --border: 0 0% 100% / 0.05;
+    --input: 0 0% 100% / 0.05;
+    --ring: 142 76% 60%;
+    --radius: 1rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-[#09090b] text-[#f4f4f5];
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+  }
+  
+  /* Film Grain Texture Overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  
+  /* Ambient Mesh Gradient Blobs */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(20, 184, 166, 0.1) 0%, transparent 50%);
+    filter: blur(100px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  .font-mono {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+  }
+}
+
+@layer utilities {
+  /* Arc Dark Glass Panels - High transparency with soft edges */
+  .glass-panel {
+    @apply bg-zinc-950/40 backdrop-blur-xl border border-white/5 rounded-2xl;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .glass-row {
+    @apply bg-transparent backdrop-blur-lg border-b border-white/[0.03] hover:bg-white/[0.015];
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Soft Gradient Text for Headers */
+  .gradient-text {
+    @apply bg-gradient-to-r from-[#f4f4f5] to-zinc-400 bg-clip-text text-transparent;
+  }
+  
+  .label-text {
+    @apply font-sans text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-bold;
+  }
+  
+  .data-text {
+    @apply font-mono text-[#f4f4f5] font-medium;
+  }
+  
+  .health-bar {
+    height: 2px;
+    border-radius: 1px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  .health-bar-fill {
+    height: 100%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+  }
+  
+  /* Soft Mint (Success) */
+  .soft-mint {
+    color: #4ade80;
+  }
+  
+  .bg-soft-mint {
+    background-color: #4ade80;
+  }
+  
+  /* Coral Rose (Danger) */
+  .coral-rose {
+    color: #fb7185;
+  }
+  
+  .bg-coral-rose {
+    background-color: #fb7185;
+  }
+  
+  /* Legacy support - map to new colors */
+  .neon-mint {
+    color: #4ade80;
+  }
+  
+  .bg-neon-mint {
+    background-color: #4ade80;
+  }
+  
+  /* Holographic Glow Effect */
+  .holographic-glow {
+    box-shadow: 
+      0 0 20px rgba(34, 211, 238, 0.3),
+      inset 0 0 20px rgba(59, 130, 246, 0.1);
+    background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(59, 130, 246, 0.1));
+  }
+
+  @keyframes confettiFall {
+    0% {
+      transform: translate(-50%, -50%) scale(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(calc(-50% + var(--x, 0px)), calc(-50% + 400px)) scale(1) rotate(360deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  /* Marquee Animation */
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  
+  .animate-marquee {
+    animation: marquee 60s linear infinite;
+  }
+}
