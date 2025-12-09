@@ -1,6 +1,6 @@
 'use client';
 
-import { Flame, TrendingUp, Calendar, Activity, Award, CheckCircle2, XCircle } from 'lucide-react';
+import { Flame, TrendingUp, Award, CheckCircle2, XCircle } from 'lucide-react';
 import { USER_STATS, MOCK_HISTORY, MOCK_HEATMAP, SPARKLINE_DATA } from '@/lib/mock-data';
 
 export default function ProfileView() {
@@ -18,22 +18,21 @@ export default function ProfileView() {
     }).format(date);
   };
 
-  // Get intensity color for heatmap (Slate-800 for 0 -> Emerald-400 for 4)
+  // Get intensity color for heatmap
   const getIntensityColor = (intensity: number) => {
     const colors = [
-      'bg-slate-800', // 0 - no activity
-      'bg-slate-700', // 1 - minimal
-      'bg-emerald-900', // 2 - moderate
+      'bg-slate-900', // 0 - no activity
+      'bg-emerald-950', // 1 - low
+      'bg-emerald-800', // 2 - medium
       'bg-emerald-600', // 3 - high
-      'bg-emerald-400', // 4 - max intensity
+      'bg-emerald-500', // 4 - max
     ];
     return colors[intensity] || colors[0];
   };
 
   return (
     <main className="w-full min-h-screen pl-28 pt-16 bg-[#020617]">
-      {/* Arc Night grain texture */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('data:image/svg+xml,%3Csvg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"noiseFilter\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.65\" numOctaves=\"3\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%25\" height=\"100%25\" filter=\"url(%23noiseFilter)\"/%3E%3C/svg%3E')]"></div>
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none"></div>
 
       <div className="relative z-10 container mx-auto px-6 py-12 max-w-7xl">
         {/* Hero Section - Net Focus Earnings */}
@@ -170,29 +169,6 @@ export default function ProfileView() {
             </div>
             ))}
           </div>
-        </div>
-      </div>
-    </main>
-  );
-}
-              <div className="label-text mb-2">Longest Streak</div>
-              <div className="data-text text-3xl font-bold">
-                {stats?.longest_streak || 0}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Contribution Heatmap in Glass Panel */}
-        <div className="glass-panel rounded-2xl p-6 mb-8">
-          <div className="label-text mb-6">Activity Graph</div>
-          <ContributionHeatmap data={heatmapData} />
-        </div>
-
-        {/* Audit Log */}
-        <div className="glass-panel rounded-2xl p-6">
-          <div className="label-text mb-6">Transaction History</div>
-          <AuditLog wagers={wagers} />
         </div>
       </div>
     </main>
