@@ -9,15 +9,17 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import { Button } from './ui/button'
-import { UserCircle, LayoutDashboard, User as UserIcon, LogOut, TrendingUp, Zap } from 'lucide-react'
+import { UserCircle, LayoutDashboard, User as UserIcon, LogOut, TrendingUp, Zap, Plus } from 'lucide-react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import WagerModal from '@/components/wager-modal'
 
 export default function DashboardNavbar() {
   const supabase = createClient()
   const router = useRouter()
   const pathname = usePathname()
   const [hasActiveSession, setHasActiveSession] = useState(false)
+  const [isWagerModalOpen, setIsWagerModalOpen] = useState(false)
   
   useEffect(() => {
     const checkActiveSession = () => {
@@ -54,7 +56,18 @@ export default function DashboardNavbar() {
               </Link>
             )}
           </div>
-          <DropdownMenu>
+          
+          {/* New Position Button (Apple Style) */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsWagerModalOpen(true)}
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-medium text-sm flex items-center gap-2 shadow-lg hover:shadow-emerald-500/50 transition-all"
+            >
+              <Plus size={16} />
+              New Position
+            </button>
+            
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="text-zinc-500 hover:text-white">
                 <UserCircle className="h-5 w-5" />
@@ -70,6 +83,7 @@ export default function DashboardNavbar() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </div>
       </nav>
 
@@ -106,6 +120,9 @@ export default function DashboardNavbar() {
           </Link>
         </div>
       </div>
+      
+      {/* Wager Modal */}
+      <WagerModal isOpen={isWagerModalOpen} onClose={() => setIsWagerModalOpen(false)} />
     </>
   )
 }

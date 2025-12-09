@@ -35,14 +35,33 @@ interface DeepWorkBlock {
 export default function FocusSessionPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   
+  // Vibe mode state
+  const [vibeMode, setVibeMode] = useState<'market' | 'cozy'>('market');
+  
+  // Initial load animation state
+  const [isEntering, setIsEntering] = useState(true);
+  
   // Store active session ID in localStorage
   useEffect(() => {
     localStorage.setItem('activeSessionId', params.id);
     
+    // Fade in animation
+    const timer = setTimeout(() => setIsEntering(false), 100);
+    
     return () => {
+      clearTimeout(timer);
       localStorage.removeItem('activeSessionId');
     };
   }, [params.id]);
+  
+  // Get stake amount from session (default to 50 if not set)
+  const [stakeAmount] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('currentStakeAmount');
+      return stored ? parseInt(stored) : 50;
+    }
+    return 50;
+  });
   
   // Core State
   const [tasks, setTasks] = useState<Task[]>([
@@ -292,147 +311,77 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
   const activeDeepWorkCount = deepWorkBlocks.filter(b => b.active).length;
   const deepWorkBonus = activeDeepWorkCount * 20; // $20 bonus per completed block
 
+  // Dynamic background based on vibe mode
+  const bgClass = vibeMode === 'cozy' 
+    ? 'bg-gradient-to-br from-orange-900 to-amber-900' 
+    : 'bg-slate-950';
+
   return (
     <>
-      <HabitTicker />
-      <main className="w-full min-h-screen flex flex-col relative p-6 pt-20">
-        {/* Back Button */}
+      {/* Full-screen immersive layout - NO navbar/sidebars */}
+      <main className={`w-full min-h-screen ${bgClass} relative transition-all duration-1000 ${isEntering ? 'opacity-0' : 'opacity-100'}`}>
+        {/* Arc Night noise texture */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('data:image/svg+xml,%3Csvg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"noiseFilter\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.65\" numOctaves=\"3\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%25\" height=\"100%25\" filter=\"url(%23noiseFilter)\"/%3E%3C/svg%3E')]"></div>
+        
+        {/* Back Button (subtle) */}
         <button
           onClick={() => router.push('/dashboard')}
-          className="fixed top-20 left-6 text-zinc-500 hover:text-chalk transition-colors z-50"
+          className="absolute top-6 left-6 text-zinc-600 hover:text-zinc-400 transition-colors z-50"
         >
-          <ArrowLeft size={24} />
+          <ArrowLeft size={20} />
         </button>
 
-        <div className="container mx-auto max-w-7xl">
-          {/* Top Section: Active Contract Hero */}
-          <div className="glass-panel p-8 mb-6 bg-gradient-to-b from-slate-950/40 to-slate-950/60 relative overflow-hidden">
-            {/* Subtle glow effect */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            
-            <div className="relative z-10">
-              {/* Active Contract Label */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                <div className="label-text text-emerald-400">ACTIVE CONTRACT</div>
+        {/* 3-Column Grid Layout */}
+        <div className="relative z-10 h-screen grid grid-cols-3 gap-8 p-8">
+          
+          {/* LEFT COLUMN: Vinyl Player */}
+          <div className="flex flex-col justify-center">
+            <VinylPlayer />
+          </div>
+
+          {/* CENTER COLUMN: Giant Timer + Vibe Switcher */}
+          <div className="flex flex-col items-center justify-center gap-8">
+            {/* Active Contract Indicator */}
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+              <div className="label-text text-emerald-400">ACTIVE CONTRACT</div>
+            </div>
+
+            {/* Giant Countdown Timer */}
+            <div className="text-center">
+              <div className="font-mono text-8xl font-bold gradient-text mb-6 tabular-nums tracking-tighter">
+                {String(timeRemaining.hours).padStart(2, '0')}:
+                {String(timeRemaining.minutes).padStart(2, '0')}:
+                {String(timeRemaining.seconds).padStart(2, '0')}
               </div>
               
-              <div className="flex items-center justify-between">
-                {/* Left: Timer with Contract Info */}
-                <div>
-                  <div className="data-text text-6xl font-bold gradient-text mb-3">
-                    {String(timeRemaining.hours).padStart(2, '0')}:
-                    {String(timeRemaining.minutes).padStart(2, '0')}:
-                    {String(timeRemaining.seconds).padStart(2, '0')}
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-zinc-400">
-                    <span>Capital at stake: <span className="text-emerald-400 font-bold">{formatCurrency(baseWager)}</span></span>
-                    <span className="text-zinc-700">•</span>
-                    <span>Focus Value: <span className="text-white font-bold">{currentFocusValue.toFixed(0)}</span></span>
-                  </div>
-                </div>
-
-                {/* Right: Close Market Button */}
-                <Button
-                  onClick={handleCloseMarket}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold uppercase tracking-wider px-8 py-6 h-auto shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all hover:shadow-[0_0_40px_rgba(16,185,129,0.5)]"
-                >
-                  <span className="text-lg">SETTLE CONTRACT</span>
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Grid: Tasks & Chart */}
-          <div className="grid grid-cols-2 gap-6 mb-6">
-            {/* Left: Task List & Deep Work Blocks */}
-            <div className="space-y-4">
-              {/* Timeboxed Tasks */}
-              <div>
-                <div className="label-text mb-3">TIMEBOXED TASKS</div>
-                <TimeboxedTaskList tasks={tasks} onTaskToggle={handleTaskToggle} />
-              </div>
-
-              {/* Deep Work Blocks */}
-              <div>
-                <div className="label-text mb-3">DEEP WORK LEVERAGE (90m BLOCKS)</div>
-                <div className="space-y-2">
-                  {deepWorkBlocks.map((block) => (
-                    <div key={block.id} className="glass-panel p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Zap 
-                            size={20} 
-                            className={block.active ? 'text-soft-mint' : 'text-zinc-500'} 
-                          />
-                          <div>
-                            <div className="data-text text-sm font-bold">
-                              Block {block.id}
-                            </div>
-                            {block.active && (
-                              <div className="label-text text-[10px] mt-1">
-                                1.5x MULTIPLIER ACTIVE
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {block.active ? (
-                          <div className="flex items-center gap-3">
-                            <div className="data-text text-lg soft-mint">
-                              {formatDeepWorkTime(block.remainingSeconds)}
-                            </div>
-                            <Button
-                              onClick={() => handleCancelDeepWork(block.id)}
-                              variant="ghost"
-                              size="sm"
-                              className="text-coral-rose hover:text-soft-rose/80"
-                            >
-                              CANCEL
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button
-                            onClick={() => handleStartDeepWork(block.id)}
-                            size="sm"
-                            className="bg-white/5 hover:bg-white/10 text-chalk"
-                            disabled={block.remainingSeconds > 0}
-                          >
-                            {block.remainingSeconds > 0 ? 'USED' : 'START 90m'}
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+              {/* Contract Value Badge (Enhanced) */}
+              <div className="flex items-center justify-center gap-4 mb-8">
+                <div className="px-6 py-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10">
+                  <span className="text-xs text-zinc-500 uppercase tracking-wider mr-2">Contract Value:</span>
+                  <span className="text-xl font-bold font-mono text-emerald-400">${stakeAmount || 50}.00</span>
                 </div>
               </div>
+
+              {/* Settle Button */}
+              <Button
+                onClick={handleCloseMarket}
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold uppercase tracking-wider px-10 py-4 text-base shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all hover:shadow-[0_0_50px_rgba(16,185,129,0.5)]"
+              >
+                SETTLE CONTRACT
+              </Button>
             </div>
 
-            {/* Right: Volatility Chart */}
-            <div>
-              <div className="label-text mb-3">INTRADAY VOLATILITY</div>
-              <div className="glass-panel p-4 h-[500px]">
-                <VolatilityChart data={volatilityData} />
-              </div>
-            </div>
+            {/* Vibe Switcher Below Timer */}
+            <VibeSwitcher onVibeChange={(mode) => setVibeMode(mode)} />
           </div>
 
-          {/* Bottom: Vinyl Player, Vibe Switcher & Forfeit */}
-          <div className="flex items-end justify-between">
-            <div className="flex gap-4">
-              <VinylPlayer />
-              <VibeSwitcher />
+          {/* RIGHT COLUMN: Timeboxed Task List */}
+          <div className="flex flex-col">
+            <div className="label-text mb-4">TIMEBOXED TASKS</div>
+            <div className="flex-1 overflow-y-auto">
+              <TimeboxedTaskList tasks={tasks} onTaskToggle={handleTaskToggle} />
             </div>
-
-            <Button
-              onClick={handleForfeit}
-              className="glass-panel border-2 border-soft-rose/50 text-soft-rose hover:bg-soft-rose/10 font-bold uppercase tracking-wider px-8 py-6 h-auto"
-            >
-              <div>
-                <div className="text-xs mb-1">FORFEIT WAGER</div>
-                <div className="data-text text-lg">${baseWager} LOSS</div>
-              </div>
-            </Button>
           </div>
         </div>
       </main>
