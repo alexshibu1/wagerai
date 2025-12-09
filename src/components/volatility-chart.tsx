@@ -18,7 +18,7 @@ export default function VolatilityChart({ data }: VolatilityChartProps) {
   const isUptrend = recentData.length >= 2 && 
     recentData[recentData.length - 1].value > recentData[0].value;
   
-  const strokeColor = isUptrend ? '#00FF94' : '#FF4500';
+  const strokeColor = isUptrend ? '#2dd4bf' : '#fda4af';
   const gradientId = isUptrend ? 'upGradient' : 'downGradient';
 
   return (
@@ -30,10 +30,10 @@ export default function VolatilityChart({ data }: VolatilityChartProps) {
             <stop offset="5%" stopColor="#00FF94" stopOpacity={0.4}/>
             <stop offset="95%" stopColor="#00FF94" stopOpacity={0}/>
           </linearGradient>
-          {/* Red gradient for downtrend */}
+          {/* Rose gradient for downtrend */}
           <linearGradient id="downGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#FF4500" stopOpacity={0.4}/>
-            <stop offset="95%" stopColor="#FF4500" stopOpacity={0}/>
+            <stop offset="5%" stopColor="#fda4af" stopOpacity={0.4}/>
+            <stop offset="95%" stopColor="#fda4af" stopOpacity={0}/>
           </linearGradient>
         </defs>
         <XAxis 

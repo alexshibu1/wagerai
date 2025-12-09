@@ -377,7 +377,7 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
                               onClick={() => handleCancelDeepWork(block.id)}
                               variant="ghost"
                               size="sm"
-                              className="text-coral-rose hover:text-coral-rose/80"
+                              className="text-coral-rose hover:text-soft-rose/80"
                             >
                               CANCEL
                             </Button>
@@ -414,7 +414,7 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
 
             <Button
               onClick={handleForfeit}
-              className="glass-panel border-2 border-coral-rose/50 text-coral-rose hover:bg-coral-rose/10 font-bold uppercase tracking-wider px-8 py-6 h-auto"
+              className="glass-panel border-2 border-soft-rose/50 text-soft-rose hover:bg-soft-rose/10 font-bold uppercase tracking-wider px-8 py-6 h-auto"
             >
               <div>
                 <div className="text-xs mb-1">FORFEIT WAGER</div>

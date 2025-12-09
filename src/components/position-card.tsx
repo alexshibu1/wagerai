@@ -64,7 +64,7 @@ export default function PositionCard({ wager, onComplete, onFail, showLocked }: 
               className="health-bar-fill" 
               style={{
                 width: `${health}%`,
-                backgroundColor: isBleeding ? '#FF4500' : '#00FF94'
+                backgroundColor: isBleeding ? '#fda4af' : '#2dd4bf'
               }}
             />
           </div>
@@ -99,10 +99,10 @@ export default function PositionCard({ wager, onComplete, onFail, showLocked }: 
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 hover:bg-white/5 hover:text-neon-mint transition-colors group"
+                className="h-8 w-8 p-0 hover:bg-white/5 hover:text-electric-teal transition-colors group"
                 title={isYearWager ? "View Project Details" : "Start Focus Session"}
               >
-                <Play size={14} className="text-zinc-500 group-hover:text-neon-mint" />
+                <Play size={14} className="text-zinc-500 group-hover:text-electric-teal" />
               </Button>
             </Link>
             
@@ -112,9 +112,9 @@ export default function PositionCard({ wager, onComplete, onFail, showLocked }: 
                 onClick={() => onComplete(wager.id)}
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 hover:bg-white/5 hover:text-neon-mint transition-colors group"
+                className="h-8 w-8 p-0 hover:bg-white/5 hover:text-electric-teal transition-colors group"
               >
-                <Check size={16} className="text-zinc-500 group-hover:text-neon-mint" />
+                <Check size={16} className="text-zinc-500 group-hover:text-electric-teal" />
               </Button>
             )}
           </>

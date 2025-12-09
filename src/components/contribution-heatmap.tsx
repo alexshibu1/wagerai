@@ -15,9 +15,9 @@ export default function ContributionHeatmap({ data, onDayClick }: ContributionHe
   const getCellColor = (outcome: 'win' | 'loss' | 'none') => {
     switch (outcome) {
       case 'win':
-        return 'bg-[#00C805] shadow-[0_0_8px_rgba(0,200,5,0.6)] hover:shadow-[0_0_12px_rgba(0,200,5,0.8)]';
+        return 'bg-electric-teal shadow-[0_0_8px_rgba(45,212,191,0.5)] hover:shadow-[0_0_12px_rgba(45,212,191,0.7)]';
       case 'loss':
-        return 'bg-[#FF4500] shadow-[0_0_8px_rgba(255,69,0,0.6)] hover:shadow-[0_0_12px_rgba(255,69,0,0.8)]';
+        return 'bg-soft-rose shadow-[0_0_8px_rgba(253,164,175,0.5)] hover:shadow-[0_0_12px_rgba(253,164,175,0.7)]';
       default:
         return 'bg-zinc-800/50 hover:bg-zinc-700/50';
     }
@@ -59,7 +59,7 @@ export default function ContributionHeatmap({ data, onDayClick }: ContributionHe
         <span>Less</span>
         <div className="flex gap-1">
           <div className="w-3 h-3 bg-zinc-800/50 rounded-sm" />
-          <div className="w-3 h-3 bg-[#00C805] rounded-sm shadow-[0_0_8px_rgba(0,200,5,0.6)]" />
+          <div className="w-3 h-3 bg-electric-teal rounded-sm shadow-[0_0_8px_rgba(45,212,191,0.5)]" />
         </div>
         <span>More</span>
       </div>

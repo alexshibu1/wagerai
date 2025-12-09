@@ -41,7 +41,7 @@ export default function FocusTaskList({ tasks, onTaskToggle }: FocusTaskListProp
     // Create 20 confetti pieces
     for (let i = 0; i < 20; i++) {
       const confetti = document.createElement('div');
-      confetti.className = 'data-text text-2xl neon-mint';
+      confetti.className = 'data-text text-2xl electric-teal';
       confetti.textContent = ['$', '✓'][Math.floor(Math.random() * 2)];
       confetti.style.position = 'absolute';
       confetti.style.left = `${50 + (Math.random() - 0.5) * 20}%`;
@@ -70,7 +70,7 @@ export default function FocusTaskList({ tasks, onTaskToggle }: FocusTaskListProp
           {/* Custom Checkbox */}
           <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
             task.completed 
-              ? 'border-neon-mint bg-neon-mint' 
+              ? 'border-electric-teal bg-electric-teal' 
               : 'border-white/30 group-hover:border-white/50'
           }`}>
             {task.completed && <Check size={16} className="text-black font-bold" />}

@@ -123,7 +123,7 @@ export default function SettlementModal({
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="label-text">BASE EARNINGS</span>
-                  <span className="data-text text-sm neon-mint">+{formatCurrency(baseEarnings)}</span>
+                  <span className="data-text text-sm electric-teal">+{formatCurrency(baseEarnings)}</span>
                 </div>
                 {multiplierBonus > 0 && (
                   <div className="flex justify-between items-center">
@@ -140,7 +140,7 @@ export default function SettlementModal({
                 <div className="h-px bg-white/10 my-2"></div>
                 <div className="flex justify-between items-center">
                   <span className="label-text text-base">NET P&L</span>
-                  <span className={`data-text text-2xl font-bold ${isProfit ? 'neon-mint' : 'text-red-500'}`}>
+                    <span className={`data-text text-2xl font-bold ${isProfit ? 'electric-teal' : 'text-soft-rose'}`}>
                     {isProfit ? '+' : ''}{formatCurrency(netPL)}
                   </span>
                 </div>

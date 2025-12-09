@@ -146,7 +146,7 @@ export default function PortfolioView() {
                     onClick={() => setChartTimeframe(timeframe)}
                     className={`px-3 py-1 rounded text-xs font-mono font-bold transition-all ${
                       chartTimeframe === timeframe
-                        ? 'bg-neon-mint text-black'
+                        ? 'bg-lavender text-midnight'
                         : 'text-zinc-500 hover:text-white hover:bg-white/5'
                     }`}
                   >
@@ -225,7 +225,7 @@ export default function PortfolioView() {
         {/* Floating Action Button */}
         <Button
           onClick={() => setIsExchangeOpen(true)}
-          className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-neon-mint hover:bg-neon-mint/90 text-black font-bold shadow-2xl z-50"
+          className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-gradient-to-br from-electric-teal to-lavender hover:from-electric-teal/90 hover:to-lavender/90 text-midnight font-bold shadow-2xl z-50"
         >
           <Plus size={28} />
         </Button>
