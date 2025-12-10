@@ -191,3 +191,4 @@ export default function TdayIndexChart({ baseValue = 100 }: TdayIndexChartProps)
     </div>
   );
 }
+

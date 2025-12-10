@@ -772,11 +772,15 @@ export default function ProfileView() {
         {/* ============================================== */}
         <div className="mb-12 flex gap-4">
           {/* LEFT: Proof of Work Heatmap Card */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#0a0a0f] p-5 overflow-hidden">
+          <div className="relative rounded-2xl border border-emerald-400/30 bg-gradient-to-br from-[#08120f] via-[#0b0f1a] to-[#06060c] p-5 overflow-hidden shadow-[0_0_55px_-16px_rgba(16,185,129,0.35)]">
+            <div className="pointer-events-none absolute inset-0 rounded-[18px]">
+              <div className="absolute bottom-[-14px] right-[-6px] h-32 w-48 bg-emerald-500/20 blur-[85px]" />
+              <div className="absolute bottom-4 right-6 h-16 w-24 bg-emerald-400/10 blur-[55px]" />
+            </div>
             {/* Header */}
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/15 flex items-center justify-center">
-                <GitCommit size={16} className="text-emerald-400" />
+                <GitCommit size={16} className="text-emerald-300" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-white">Proof of Work</h2>
@@ -849,11 +853,16 @@ export default function ProfileView() {
           </div>
           
           {/* RIGHT: Focus Areas Radar Chart */}
-          <div className="flex-1 rounded-2xl border border-white/[0.08] bg-[#0a0a0f] p-5">
+          <div className="relative flex-1 rounded-2xl border border-lime-300/30 bg-gradient-to-br from-[#0f0f08] via-[#0b0f1a] to-[#06060c] p-5 shadow-[0_0_55px_-16px_rgba(190,242,100,0.28)] overflow-hidden">
+            <div className="pointer-events-none absolute inset-0 rounded-[18px]">
+              <div className="absolute bottom-[-12px] right-[-10px] h-32 w-52 bg-lime-300/22 blur-[85px]" />
+              <div className="absolute bottom-5 right-7 h-18 w-28 bg-lime-200/16 blur-[55px]" />
+              <div className="absolute bottom-2 right-10 h-10 w-20 bg-emerald-200/12 blur-[45px]" />
+            </div>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-lime-500/15 flex items-center justify-center">
-                  <Target size={16} className="text-lime-400" />
+                <div className="w-8 h-8 rounded-lg bg-lime-400/15 flex items-center justify-center">
+                  <Target size={16} className="text-lime-200" />
                 </div>
                 <div>
                   <h2 className="text-sm font-semibold text-white">Focus Areas</h2>

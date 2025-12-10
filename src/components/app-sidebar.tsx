@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { createClient } from '../../supabase/client';
+import Logo from './logo';
 import { 
   Terminal, 
   Globe, 
   BookOpen,
-  TrendingUp,
   LogOut,
   Zap,
-  Sparkles,
   ChevronRight
 } from 'lucide-react';
 
@@ -35,6 +35,7 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const navItems: NavItem[] = [
     { 
@@ -68,11 +69,13 @@ export default function AppSidebar() {
 
   return (
     <aside 
-      className="fixed left-0 top-0 h-screen w-64 z-50 flex flex-col overflow-hidden"
+      className={`fixed left-0 top-0 h-screen z-50 flex flex-col overflow-hidden transition-[width] duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}
       style={{
         background: 'linear-gradient(180deg, rgba(5, 3, 15, 0.98) 0%, rgba(10, 5, 25, 0.98) 50%, rgba(5, 3, 15, 0.98) 100%)',
         borderRight: '1px solid rgba(255, 255, 255, 0.06)',
       }}
+      onMouseEnter={() => setIsCollapsed(false)}
+      onMouseLeave={() => setIsCollapsed(true)}
     >
       {/* ============================================== */}
       {/* ATMOSPHERIC BACKGROUND GRADIENTS */}
@@ -114,105 +117,64 @@ export default function AppSidebar() {
       {/* ============================================== */}
       {/* LOGO SECTION - Premium Branding */}
       {/* ============================================== */}
-      <Link 
-        href="/markets" 
-        className="relative flex items-center gap-3 px-5 h-20 border-b border-white/[0.06] group"
-      >
-        {/* Logo Container with Glow */}
-        <div className="relative flex-shrink-0">
-          {/* Outer glow ring */}
-          <div 
-            className="absolute -inset-2 rounded-2xl opacity-60 group-hover:opacity-100 transition-all duration-500"
-            style={{
-              background: 'conic-gradient(from 180deg at 50% 50%, rgba(139, 92, 246, 0.5) 0deg, rgba(6, 182, 212, 0.5) 120deg, rgba(168, 85, 247, 0.5) 240deg, rgba(139, 92, 246, 0.5) 360deg)',
-              filter: 'blur(12px)',
-            }}
-          />
-          {/* Logo Icon */}
-          <div 
-            className="relative w-11 h-11 rounded-xl flex items-center justify-center group-hover:scale-105 transition-all duration-300"
-            style={{
-              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.9) 0%, rgba(6, 182, 212, 0.8) 100%)',
-              boxShadow: '0 4px 20px -4px rgba(139, 92, 246, 0.5), inset 0 1px 0 rgba(255,255,255,0.2)',
-            }}
-          >
-            <TrendingUp size={20} className="text-white drop-shadow-lg" strokeWidth={2.5} />
-          </div>
-        </div>
-        
-        {/* Brand Text */}
-        <div className="flex flex-col">
-          <span 
-            className="font-black text-lg tracking-tight"
-            style={{
-              background: 'linear-gradient(135deg, #fff 0%, #a78bfa 50%, #22d3ee 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            WAGER
-          </span>
-          <span className="text-[9px] text-zinc-500 font-medium tracking-[0.25em] uppercase -mt-0.5">
-            Protocol
-          </span>
-        </div>
-        
-        {/* Sparkle accent */}
-        <Sparkles size={12} className="absolute right-5 top-1/2 -translate-y-1/2 text-violet-400/50 group-hover:text-violet-400 transition-colors" />
-      </Link>
+      <div className={`relative flex items-center h-20 border-b border-white/[0.06] ${isCollapsed ? 'justify-center px-0' : 'px-5 justify-start'}`}>
+        <Logo showWordmark={!isCollapsed} />
+      </div>
 
-      {/* ============================================== */}
-      {/* LIVE SESSION INDICATOR */}
-      {/* ============================================== */}
-      <div className="relative px-4 py-4">
-        <div 
-          className="relative flex items-center gap-3 px-4 py-3 rounded-xl overflow-hidden"
-          style={{
-            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)',
-            border: '1px solid rgba(16, 185, 129, 0.25)',
-            boxShadow: '0 4px 20px -8px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
-          }}
-        >
-          {/* Animated glow pulse */}
-          <div 
-            className="absolute inset-0 opacity-50"
-            style={{
-              background: 'radial-gradient(ellipse at 0% 50%, rgba(16, 185, 129, 0.3) 0%, transparent 70%)',
-            }}
-          />
-          
-          {/* Zap icon with glow */}
-          <div className="relative">
+      {!isCollapsed && (
+        <>
+          {/* ============================================== */}
+          {/* LIVE SESSION INDICATOR */}
+          {/* ============================================== */}
+          <div className="relative px-4 py-4">
             <div 
-              className="absolute inset-0 animate-ping"
-              style={{ 
-                background: 'rgba(16, 185, 129, 0.4)',
-                borderRadius: '50%',
-                filter: 'blur(4px)',
-              }}
-            />
-            <Zap 
-              size={16} 
-              className="relative text-emerald-400" 
-              fill="currentColor"
-              style={{ filter: 'drop-shadow(0 0 6px rgba(16, 185, 129, 0.8))' }}
-            />
-          </div>
-          
-          <div className="relative flex flex-col">
-            <span 
-              className="text-xs font-bold tracking-wide"
-              style={{ 
-                color: '#34d399',
-                textShadow: '0 0 10px rgba(16, 185, 129, 0.5)',
+              className="relative flex items-center gap-3 px-4 py-3 rounded-xl overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+                boxShadow: '0 4px 20px -8px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
               }}
             >
-              Session Active
-            </span>
-            <span className="text-[10px] text-emerald-400/60 font-mono">02:34:18 elapsed</span>
+              {/* Animated glow pulse */}
+              <div 
+                className="absolute inset-0 opacity-50"
+                style={{
+                  background: 'radial-gradient(ellipse at 0% 50%, rgba(16, 185, 129, 0.3) 0%, transparent 70%)',
+                }}
+              />
+              
+              {/* Zap icon with glow */}
+              <div className="relative">
+                <div 
+                  className="absolute inset-0 animate-ping"
+                  style={{ 
+                    background: 'rgba(16, 185, 129, 0.4)',
+                    borderRadius: '50%',
+                    filter: 'blur(4px)',
+                  }}
+                />
+                <Zap 
+                  size={16} 
+                  className="relative text-emerald-400" 
+                  fill="currentColor"
+                  style={{ filter: 'drop-shadow(0 0 6px rgba(16, 185, 129, 0.8))' }}
+                />
+              </div>
+              
+              <div className="relative flex flex-col">
+                <span 
+                  className="text-xs font-bold tracking-wide"
+                  style={{ 
+                    color: '#34d399',
+                    textShadow: '0 0 10px rgba(16, 185, 129, 0.5)',
+                  }}
+                >
+                  Session Active
+                </span>
+                <span className="text-[10px] text-emerald-400/60 font-mono">02:34:18 elapsed</span>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
       {/* ============================================== */}
       {/* NAVIGATION - Premium Nav Items */}
@@ -375,6 +337,8 @@ export default function AppSidebar() {
           </span>
         </button>
       </div>
+        </>
+      )}
     </aside>
   );
 }

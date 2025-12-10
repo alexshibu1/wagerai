@@ -50,7 +50,13 @@ export default function MarketsTable({ wagers, onComplete, onFail }: MarketsTabl
     }
   };
 
-  const openWagers = wagers.filter(w => w.status === 'OPEN');
+  // Filter out expired wagers - only show OPEN wagers that haven't expired
+  const openWagers = wagers.filter(w => {
+    if (w.status !== 'OPEN') return false;
+    const deadline = new Date(w.deadline);
+    const now = new Date();
+    return deadline.getTime() > now.getTime(); // Only show if deadline is in the future
+  });
 
   return (
     <div className="glass-panel overflow-hidden">

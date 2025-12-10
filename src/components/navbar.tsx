@@ -14,7 +14,7 @@ export default async function Navbar() {
     <nav className="fixed top-0 w-full z-50 bg-transparent backdrop-blur-md border-b border-white/10 py-4">
       <div className="container mx-auto px-6 flex justify-between items-center">
         <Link href="/" prefetch className="text-2xl font-bold text-white tracking-tight">
-          WAGER
+          WAGER TERMINAL
         </Link>
         <div className="flex gap-6 items-center">
           {user ? (

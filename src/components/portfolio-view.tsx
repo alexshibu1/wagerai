@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus, TrendingUp, Flame } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
 import PositionCard from './position-card';
@@ -14,8 +15,11 @@ import { formatCurrency } from '@/lib/wager-utils';
 import AssetIndexChart from './asset-index-chart';
 import TdayIndexChart from './tday-index-chart';
 import { Button } from './ui/button';
+import { createClient } from '../../supabase/client';
 
 export default function PortfolioView() {
+  const router = useRouter();
+  const supabase = createClient();
   const [wagers, setWagers] = useState<Wager[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [isExchangeOpen, setIsExchangeOpen] = useState(false);
@@ -83,7 +87,14 @@ export default function PortfolioView() {
     ? wagers 
     : wagers.filter(w => w.asset_class === activeTab);
 
-  const openWagers = filteredWagers.filter(w => w.status === 'OPEN');
+  // Filter out expired wagers - only show OPEN wagers that haven't expired
+  const openWagers = filteredWagers.filter(w => {
+    if (w.status !== 'OPEN') return false;
+    const deadline = new Date(w.deadline);
+    const now = new Date();
+    return deadline.getTime() > now.getTime(); // Only show if deadline is in the future
+  });
+  
   const yearWagers = wagers.filter(w => w.asset_class === 'YEAR' && w.status === 'OPEN');
   
   if (isLoading) {
@@ -410,7 +421,14 @@ export default function PortfolioView() {
     </div>
 
         <Button
-          onClick={() => window.location.href = '/session/new'}
+          onClick={async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+              router.push('/sign-in');
+              return;
+            }
+            window.location.href = '/session/new';
+          }}
           className="fixed bottom-20 right-8 w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-bold shadow-[0_0_30px_rgba(16,185,129,0.5),0_0_60px_rgba(6,182,212,0.3)] z-50 transition-all duration-300 hover:scale-110 hover:shadow-[0_0_40px_rgba(16,185,129,0.6),0_0_80px_rgba(6,182,212,0.4)]"
         >
           <Plus size={28} />

@@ -11,6 +11,28 @@ export async function createWager(title: string, assetClass: AssetClass, stakeAm
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
+  // Check if user already has an OPEN $TDAY session today
+  if (assetClass === 'TDAY') {
+    const today = new Date();
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+
+    const { data: existingTdayWagers, error: checkError } = await supabase
+      .from('wagers')
+      .select('id, title, created_at')
+      .eq('user_id', user.id)
+      .eq('asset_class', 'TDAY')
+      .eq('status', 'OPEN')
+      .gte('created_at', startOfDay.toISOString())
+      .lte('created_at', endOfDay.toISOString());
+
+    if (checkError) throw checkError;
+
+    if (existingTdayWagers && existingTdayWagers.length > 0) {
+      throw new Error('You already have an active $TDAY session today. Complete it before starting a new one.');
+    }
+  }
+
   const deadline = getDeadlineForAssetClass(assetClass);
 
   const insertData: any = {
