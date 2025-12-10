@@ -8,6 +8,7 @@ import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { AssetClass, Wager } from '@/types/wager';
 import { ASSET_CLASS_CONFIG } from '@/lib/wager-utils';
+import AssetClassInfo from './asset-class-info';
 
 interface ExchangeModalProps {
   open: boolean;
@@ -86,8 +87,9 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
 
           {/* Asset Class Tabs - Sleek Segmented Glass Tabs */}
           <div>
-            <label className="label-text mb-3 block">
+            <label className="label-text mb-3 flex items-center gap-2">
               ASSET CLASS
+              <AssetClassInfo />
             </label>
             <div className="glass-panel p-1 grid grid-cols-3 gap-1">
               {(Object.keys(ASSET_CLASS_CONFIG) as AssetClass[]).map((key) => {

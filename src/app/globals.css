@@ -35,6 +35,15 @@
   html {
     scroll-behavior: smooth;
   }
+
+  /* Hide scrollbar but keep scroll functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
   
   body {
     background-color: #030014;
@@ -68,6 +77,57 @@
     box-shadow: 
       0 0 80px -20px rgba(6, 182, 212, 0.3),
       0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* === FLOATING GLASS SIDEBAR === */
+  /* WHY: Creates a "floating" effect by using translucent background + blur + subtle glow
+     The sidebar feels like frosted glass hovering over the content */
+  .floating-glass-sidebar {
+    @apply rounded-2xl;
+    background: rgba(10, 10, 20, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+      0 0 80px -20px rgba(124, 58, 237, 0.15);
+  }
+  
+  /* === ACTIVE NAV ITEM WITH GRADIENT GLOW === */
+  /* WHY: The gradient border creates visual hierarchy - instantly shows "you are here"
+     Using pseudo-element technique for clean gradient borders */
+  .nav-item-active {
+    position: relative;
+    background: rgba(124, 58, 237, 0.1);
+    z-index: 0;
+  }
+  
+  .nav-item-active::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 0.75rem; /* matches rounded-xl */
+    padding: 1px;
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  
+  /* Subtle glow effect on active item */
+  .nav-item-active::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 0.85rem;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(124, 58, 237, 0.3));
+    filter: blur(8px);
+    z-index: -1;
+    opacity: 0.6;
   }
   
   /* === TYPOGRAPHY === */
@@ -207,6 +267,23 @@
     }
   }
   
+  /* === LOGO GLOW PULSE === */
+  /* WHY: Subtle breathing animation creates "alive" feel without being distracting */
+  .animate-logo-glow {
+    animation: logo-glow 3s ease-in-out infinite;
+  }
+  
+  @keyframes logo-glow {
+    0%, 100% {
+      opacity: 0.5;
+      filter: blur(12px);
+    }
+    50% {
+      opacity: 0.7;
+      filter: blur(16px);
+    }
+  }
+  
   /* === STROKE TEXT (for SVG) === */
   .stroke-text {
     fill: transparent;
@@ -274,6 +351,33 @@
     }
   }
   
+  /* === FILM GRAIN OVERLAY === */
+  /* WHY: Grain adds organic texture, reducing the "digital flatness"
+     The animation creates subtle movement like analog film grain
+     mix-blend-overlay preserves colors while adding texture */
+  .grain-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 128px 128px;
+  }
+  
+  /* Animated grain - subtle position shift creates "film" feel */
+  .grain-animated {
+    animation: grain-shift 0.5s steps(4) infinite;
+  }
+  
+  @keyframes grain-shift {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-2px, 2px); }
+    50% { transform: translate(2px, -2px); }
+    75% { transform: translate(-1px, -1px); }
+  }
+  
   /* === 3D PERSPECTIVE === */
   .perspective-1000 {
     perspective: 1000px;
@@ -285,5 +389,71 @@
   
   .hover\:rotate-x-0:hover {
     transform: rotateX(0deg);
+  }
+  
+  /* === ANIMATED ROTATING BORDER === */
+  /* WHY: Conic gradient creates a "scanning beam" effect that rotates around the element
+     This creates visual interest without being distracting - feels like energy/activity
+     The animation is continuous and smooth (linear timing, infinite loop) */
+  .animated-border {
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(255, 255, 255, 0.8) 10deg,
+      rgba(168, 85, 247, 0.6) 60deg,
+      rgba(59, 130, 246, 0.6) 120deg,
+      transparent 180deg,
+      rgba(6, 182, 212, 0.6) 240deg,
+      rgba(249, 115, 22, 0.5) 300deg,
+      transparent 360deg
+    );
+    animation: rotate-border 4s linear infinite;
+  }
+  
+  @keyframes rotate-border {
+    from {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+  
+  /* === RANK GLOW PULSE === */
+  /* WHY: Subtle breathing on the rank makes it feel "alive" and important */
+  .rank-glow {
+    animation: rank-pulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes rank-pulse {
+    0%, 100% {
+      filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.5));
+    }
+    50% {
+      filter: drop-shadow(0 0 30px rgba(251, 191, 36, 0.7));
+    }
+  }
+  
+  /* === SIDEBAR GLOW LEFT BORDER === */
+  /* WHY: Glowing left border on active nav items creates clear visual hierarchy
+     Using gradient + blur creates soft, premium glow effect */
+  .sidebar-nav-active {
+    position: relative;
+    background: rgba(124, 58, 237, 0.08);
+  }
+  
+  .sidebar-nav-active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background: linear-gradient(180deg, #2563eb 0%, #7c3aed 50%, #06b6d4 100%);
+    box-shadow: 
+      0 0 10px rgba(37, 99, 235, 0.6),
+      0 0 20px rgba(124, 58, 237, 0.4),
+      0 0 30px rgba(6, 182, 212, 0.3);
   }
 }

@@ -48,110 +48,106 @@ export default async function Home() {
         NOTE: Each ticker represents a real goal someone is tracking
       */}
       <section className="relative z-20 w-full bg-white/5 border-y border-white/5 backdrop-blur-xl py-4 overflow-hidden">
-        <div className="flex animate-marquee whitespace-nowrap">
+        <div className="flex items-center gap-12 px-6 font-mono text-sm text-zinc-400 uppercase tracking-wider animate-marquee whitespace-nowrap">
           {/* First set of items */}
-          <div className="flex items-center gap-12 px-6 font-mono text-sm text-zinc-400 uppercase tracking-wider">
-            {/* Daily Task: Talking to Users (Small Win) */}
-            <span className="flex items-center gap-2">
-              <span className="text-emerald-400">▲</span> 
-              <span className="text-white">TALK_5_USERS</span> 
-              <span className="text-emerald-400">+2.3%</span>
-            </span>
+          {/* Daily Task: Talking to Users (Small Win) */}
+          <span className="flex items-center gap-2">
+            <span className="text-emerald-400">▲</span> 
+            <span className="text-white">TALK_5_USERS</span> 
+            <span className="text-emerald-400">+2.3%</span>
+          </span>
 
-            {/* Project Goal: Shipping MVP (Building Momentum) */}
-            <span className="flex items-center gap-2">
-              <span className="text-emerald-400">▲</span> 
-              <span className="text-white">SHIP_MVP_V1</span> 
-              <span className="text-emerald-400">+8.7%</span>
-            </span>
+          {/* Project Goal: Shipping MVP (Building Momentum) */}
+          <span className="flex items-center gap-2">
+            <span className="text-emerald-400">▲</span> 
+            <span className="text-white">SHIP_MVP_V1</span> 
+            <span className="text-emerald-400">+8.7%</span>
+          </span>
 
-            {/* Life Goal: Marathon Training (Hit Mon-Fri Runs) */}
-            <span className="flex items-center gap-2">
-              <span className="text-emerald-400">▲</span> 
-              <span className="text-white">MARATHON_2025</span> 
-              <span className="text-emerald-400">+1.4%</span>
-            </span>
+          {/* Life Goal: Marathon Training (Hit Mon-Fri Runs) */}
+          <span className="flex items-center gap-2">
+            <span className="text-emerald-400">▲</span> 
+            <span className="text-white">MARATHON_2025</span> 
+            <span className="text-emerald-400">+1.4%</span>
+          </span>
 
-            {/* Bad Bet: Distraction (Being Crushed) */}
-            <span className="flex items-center gap-2">
-              <span className="text-rose-400">▼</span> 
-              <span className="text-white">SCROLLING_TWITTER</span> 
-              <span className="text-rose-400">-5.2%</span>
-            </span>
+          {/* Bad Bet: Distraction (Being Crushed) */}
+          <span className="flex items-center gap-2">
+            <span className="text-rose-400">▼</span> 
+            <span className="text-white">SCROLLING_TWITTER</span> 
+            <span className="text-rose-400">-5.2%</span>
+          </span>
 
-            {/* Daily Habit: Gym (Tiny Consistent Gains) */}
-            <span className="flex items-center gap-2">
-              <span className="text-emerald-400">▲</span> 
-              <span className="text-white">GYM_STREAK</span> 
-              <span className="text-emerald-400">+0.8%</span>
-            </span>
+          {/* Daily Habit: Gym (Tiny Consistent Gains) */}
+          <span className="flex items-center gap-2">
+            <span className="text-emerald-400">▲</span> 
+            <span className="text-white">GYM_STREAK</span> 
+            <span className="text-emerald-400">+0.8%</span>
+          </span>
 
-            {/* Skill Goal: Learning Rust (Good Week) */}
-            <span className="flex items-center gap-2">
-              <span className="text-teal-400">▲</span> 
-              <span className="text-white">LEARN_RUST</span> 
-              <span className="text-teal-400">+3.1%</span>
-            </span>
+          {/* Skill Goal: Learning Rust (Good Week) */}
+          <span className="flex items-center gap-2">
+            <span className="text-teal-400">▲</span> 
+            <span className="text-white">LEARN_RUST</span> 
+            <span className="text-teal-400">+3.1%</span>
+          </span>
 
-            {/* Losing Bet: Missed Deadline (Small Slip) */}
-            <span className="flex items-center gap-2">
-              <span className="text-rose-400">▼</span> 
-              <span className="text-white">LAUNCH_WEEK</span> 
-              <span className="text-rose-400">-1.9%</span>
-            </span>
-          </div>
+          {/* Losing Bet: Missed Deadline (Small Slip) */}
+          <span className="flex items-center gap-2">
+            <span className="text-rose-400">▼</span> 
+            <span className="text-white">LAUNCH_WEEK</span> 
+            <span className="text-rose-400">-1.9%</span>
+          </span>
 
           {/* Duplicate for seamless loop */}
-          <div className="flex items-center gap-12 px-6 font-mono text-sm text-zinc-400 uppercase tracking-wider">
-            {/* Daily Task: Talking to Users (Small Win) */}
-            <span className="flex items-center gap-2">
-              <span className="text-emerald-400">▲</span> 
-              <span className="text-white">TALK_5_USERS</span> 
-              <span className="text-emerald-400">+2.3%</span>
-            </span>
+          {/* Daily Task: Talking to Users (Small Win) */}
+          <span className="flex items-center gap-2">
+            <span className="text-emerald-400">▲</span> 
+            <span className="text-white">TALK_5_USERS</span> 
+            <span className="text-emerald-400">+2.3%</span>
+          </span>
 
-            {/* Project Goal: Shipping MVP (Building Momentum) */}
-            <span className="flex items-center gap-2">
-              <span className="text-emerald-400">▲</span> 
-              <span className="text-white">SHIP_MVP_V1</span> 
-              <span className="text-emerald-400">+8.7%</span>
-            </span>
+          {/* Project Goal: Shipping MVP (Building Momentum) */}
+          <span className="flex items-center gap-2">
+            <span className="text-emerald-400">▲</span> 
+            <span className="text-white">SHIP_MVP_V1</span> 
+            <span className="text-emerald-400">+8.7%</span>
+          </span>
 
-            {/* Life Goal: Marathon Training (Hit Mon-Fri Runs) */}
-            <span className="flex items-center gap-2">
-              <span className="text-emerald-400">▲</span> 
-              <span className="text-white">MARATHON_2025</span> 
-              <span className="text-emerald-400">+1.4%</span>
-            </span>
+          {/* Life Goal: Marathon Training (Hit Mon-Fri Runs) */}
+          <span className="flex items-center gap-2">
+            <span className="text-emerald-400">▲</span> 
+            <span className="text-white">MARATHON_2025</span> 
+            <span className="text-emerald-400">+1.4%</span>
+          </span>
 
-            {/* Bad Bet: Distraction (Being Crushed) */}
-            <span className="flex items-center gap-2">
-              <span className="text-rose-400">▼</span> 
-              <span className="text-white">SCROLLING_TWITTER</span> 
-              <span className="text-rose-400">-5.2%</span>
-            </span>
+          {/* Bad Bet: Distraction (Being Crushed) */}
+          <span className="flex items-center gap-2">
+            <span className="text-rose-400">▼</span> 
+            <span className="text-white">SCROLLING_TWITTER</span> 
+            <span className="text-rose-400">-5.2%</span>
+          </span>
 
-            {/* Daily Habit: Gym (Tiny Consistent Gains) */}
-            <span className="flex items-center gap-2">
-              <span className="text-emerald-400">▲</span> 
-              <span className="text-white">GYM_STREAK</span> 
-              <span className="text-emerald-400">+0.8%</span>
-            </span>
+          {/* Daily Habit: Gym (Tiny Consistent Gains) */}
+          <span className="flex items-center gap-2">
+            <span className="text-emerald-400">▲</span> 
+            <span className="text-white">GYM_STREAK</span> 
+            <span className="text-emerald-400">+0.8%</span>
+          </span>
 
-            {/* Skill Goal: Learning Rust (Good Week) */}
-            <span className="flex items-center gap-2">
-              <span className="text-teal-400">▲</span> 
-              <span className="text-white">LEARN_RUST</span> 
-              <span className="text-teal-400">+3.1%</span>
-            </span>
+          {/* Skill Goal: Learning Rust (Good Week) */}
+          <span className="flex items-center gap-2">
+            <span className="text-teal-400">▲</span> 
+            <span className="text-white">LEARN_RUST</span> 
+            <span className="text-teal-400">+3.1%</span>
+          </span>
 
-            {/* Losing Bet: Missed Deadline (Small Slip) */}
-            <span className="flex items-center gap-2">
-              <span className="text-rose-400">▼</span> 
-              <span className="text-white">LAUNCH_WEEK</span> 
-              <span className="text-rose-400">-1.9%</span>
-            </span>
-          </div>
+          {/* Losing Bet: Missed Deadline (Small Slip) */}
+          <span className="flex items-center gap-2">
+            <span className="text-rose-400">▼</span> 
+            <span className="text-white">LAUNCH_WEEK</span> 
+            <span className="text-rose-400">-1.9%</span>
+          </span>
         </div>
       </section>
 

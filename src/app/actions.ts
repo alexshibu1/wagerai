@@ -83,7 +83,7 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  return redirect("/markets");
+  return redirect("/profile");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
@@ -137,7 +137,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (password !== confirmPassword) {
     encodedRedirect(
       "error",
-      "/markets/reset-password",
+      "/dashboard/reset-password",
       "Passwords do not match",
     );
   }
@@ -149,7 +149,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (error) {
     encodedRedirect(
       "error",
-      "/markets/reset-password",
+      "/dashboard/reset-password",
       "Password update failed",
     );
   }

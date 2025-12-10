@@ -20,10 +20,10 @@ export default async function Navbar() {
           {user ? (
             <>
               <Link
-                href="/dashboard"
+                href="/markets"
                 className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
               >
-                Dashboard
+                Markets
               </Link>
               <UserProfile  />
             </>

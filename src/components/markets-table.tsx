@@ -77,7 +77,7 @@ export default function MarketsTable({ wagers, onComplete, onFail }: MarketsTabl
       <div className="divide-y divide-white/[0.02]">
         {openWagers.length > 0 ? (
           openWagers.map(wager => {
-            const timeInfo = getTimeRemaining(wager.expires_at);
+            const timeInfo = getTimeRemaining(wager.deadline);
             const pl = 0; // Calculate P&L based on your logic
             
             return (
@@ -112,7 +112,7 @@ export default function MarketsTable({ wagers, onComplete, onFail }: MarketsTabl
 
                 {/* Volume (Stake) */}
                 <div className="data-text text-sm font-bold text-zinc-300">
-                  {formatCurrency(wager.stake)}
+                  {formatCurrency(wager.stake_amount)}
                 </div>
 
                 {/* P&L */}

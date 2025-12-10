@@ -60,8 +60,8 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       <main className="w-full min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="text-zinc-500 data-text text-sm mb-4">Project not found</div>
-          <Button onClick={() => router.push('/markets')}>
-            Return to Markets
+          <Button onClick={() => router.push('/dashboard')}>
+            Return to Dashboard
           </Button>
         </div>
       </main>
@@ -78,7 +78,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       <div className="container mx-auto px-6 py-6 max-w-5xl">
         {/* Back Button */}
         <button
-          onClick={() => router.push('/markets')}
+          onClick={() => router.push('/dashboard')}
           className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors mb-6"
         >
           <ArrowLeft size={20} />

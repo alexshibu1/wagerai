@@ -35,7 +35,7 @@ export async function createWager(title: string, assetClass: AssetClass, stakeAm
   if (error) throw error;
 
   await updateUserStats(user.id);
-  revalidatePath('/markets');
+  revalidatePath('/dashboard');
   
   return data;
 }
@@ -63,7 +63,7 @@ export async function completeWager(wagerId: string) {
   if (error) throw error;
 
   await updateUserStats(user.id);
-  revalidatePath('/markets');
+  revalidatePath('/dashboard');
   revalidatePath('/profile');
   
   return data;
@@ -90,7 +90,7 @@ export async function failWager(wagerId: string) {
   if (error) throw error;
 
   await updateUserStats(user.id);
-  revalidatePath('/markets');
+  revalidatePath('/dashboard');
   revalidatePath('/profile');
   
   return data;

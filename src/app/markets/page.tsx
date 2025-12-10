@@ -1,7 +1,8 @@
+import FloatingSidebar from "@/components/floating-sidebar";
 import { redirect } from "next/navigation";
 import { createClient } from "../../../supabase/server";
-import TerminalLayout from "@/components/terminal-layout";
-import MarketsContent from "@/components/markets-content";
+import MarketsView from "@/components/markets-view";
+import HabitTicker from "@/components/habit-ticker";
 
 export default async function Markets() {
   const supabase = await createClient();
@@ -15,8 +16,13 @@ export default async function Markets() {
   }
 
   return (
-    <TerminalLayout>
-      <MarketsContent />
-    </TerminalLayout>
+    <div className="min-h-screen bg-obsidian">
+      <FloatingSidebar />
+      {/* Main content with left padding for collapsed sidebar + top padding */}
+      <main className="pl-24 pt-8">
+        <MarketsView />
+        <HabitTicker />
+      </main>
+    </div>
   );
 }

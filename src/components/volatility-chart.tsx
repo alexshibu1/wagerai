@@ -10,9 +10,10 @@ interface VolatilityDataPoint {
 
 interface VolatilityChartProps {
   data: VolatilityDataPoint[];
+  currentValue?: number; // Optional: current focus value for real-time display
 }
 
-export default function VolatilityChart({ data }: VolatilityChartProps) {
+export default function VolatilityChart({ data, currentValue }: VolatilityChartProps) {
   // Determine if the trend is up or down based on last few points
   const recentData = data.slice(-5);
   const isUptrend = recentData.length >= 2 && 

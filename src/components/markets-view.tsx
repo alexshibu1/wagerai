@@ -59,17 +59,17 @@ export default function MarketsView() {
 
   if (isLoading) {
     return (
-      <main className="w-full min-h-screen pt-16 pl-28">
+      <div className="w-full min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center text-zinc-500 data-text text-sm">Loading...</div>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
     <>
-      <main className="w-full min-h-screen pt-16 pl-28">
+      <div className="w-full min-h-screen">
         <div className="container mx-auto px-6 py-6 max-w-7xl">
           {/* Page Header */}
           <div className="mb-8">
@@ -93,11 +93,11 @@ export default function MarketsView() {
         {/* Floating Action Button - Create New Wager */}
         <Button
           onClick={() => setIsExchangeOpen(true)}
-          className="fixed bottom-20 right-8 w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-[0_0_24px_rgba(16,185,129,0.5)] z-50 transition-all hover:scale-105"
+          className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-[0_0_24px_rgba(16,185,129,0.5)] z-50 transition-all hover:scale-105"
         >
           <Plus size={28} />
         </Button>
-      </main>
+      </div>
 
       <ExchangeModal
         open={isExchangeOpen}

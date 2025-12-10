@@ -326,7 +326,7 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
         
       {/* Back Button (subtle) */}
       <button
-        onClick={() => router.push('/dashboard')}
+        onClick={() => router.push('/markets')}
         className="absolute top-6 left-6 text-zinc-600 hover:text-zinc-400 transition-colors z-50"
       >
         <ArrowLeft size={20} />

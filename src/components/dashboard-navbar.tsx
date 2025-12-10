@@ -40,7 +40,7 @@ export default function DashboardNavbar() {
       <nav className="w-full border-b border-white/[0.05] glass-panel backdrop-blur-2xl py-3 fixed top-0 z-50">
         <div className="container mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" prefetch className="data-text text-xl font-bold soft-mint flex items-center gap-2">
+            <Link href="/markets" prefetch className="data-text text-xl font-bold soft-mint flex items-center gap-2">
               <TrendingUp size={20} />
               WAGER
             </Link>
@@ -90,12 +90,12 @@ export default function DashboardNavbar() {
       {/* Floating Dock - Left Side */}
       <div className="fixed left-6 top-1/2 -translate-y-1/2 z-40">
         <div className="glass-panel p-3 flex flex-col gap-3 shadow-2xl">
-          <Link href="/dashboard">
+          <Link href="/markets">
             <Button 
               variant="ghost" 
               size="icon"
               className={`w-12 h-12 rounded-xl transition-all ${
-                pathname === '/dashboard' 
+                pathname === '/markets' 
                   ? 'bg-soft-mint/10 text-soft-mint border border-soft-mint/20' 
                   : 'text-zinc-500 hover:text-white hover:bg-white/5'
               }`}
