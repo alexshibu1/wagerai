@@ -101,11 +101,15 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                 {wager.title}
               </h1>
               <div className="label-text text-sm">
-                Created {new Date(wager.created_at).toLocaleDateString('en-US', { 
-                  month: 'long', 
-                  day: 'numeric', 
-                  year: 'numeric' 
-                })}
+                Created {(() => {
+                  const date = new Date(wager.created_at);
+                  const month = date.toLocaleDateString('en-US', { month: 'short' });
+                  const day = date.getDate();
+                  const suffix = day === 1 || day === 21 || day === 31 ? 'st' :
+                                day === 2 || day === 22 ? 'nd' :
+                                day === 3 || day === 23 ? 'rd' : 'th';
+                  return `${month} ${day}${suffix}`;
+                })()}
               </div>
             </div>
 

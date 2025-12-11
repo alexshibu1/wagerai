@@ -11,11 +11,12 @@ import { AssetClass, Wager } from '@/types/wager';
 import { ASSET_CLASS_CONFIG } from '@/lib/wager-utils';
 import AssetClassInfo from './asset-class-info';
 import { createClient } from '../../supabase/client';
+import TaskInputDialog from './task-input-dialog';
 
 interface ExchangeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onExecute: (title: string, assetClass: AssetClass, stake: number, linkedYearWagerId?: string) => void;
+  onExecute: (title: string, assetClass: AssetClass, stake: number, linkedYearWagerId?: string) => Promise<Wager | null>;
   yearWagers?: Wager[];
 }
 
@@ -23,10 +24,14 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
   const router = useRouter();
   const supabase = createClient();
   
-  // Generate default title: "Daily Session: [Current Date]"
   const getDefaultTitle = () => {
     const today = new Date();
-    return `Daily Session: ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    const month = today.toLocaleDateString('en-US', { month: 'short' });
+    const day = today.getDate();
+    const suffix = day === 1 || day === 21 || day === 31 ? 'st' :
+                  day === 2 || day === 22 ? 'nd' :
+                  day === 3 || day === 23 ? 'rd' : 'th';
+    return `Daily Session: ${month} ${day}${suffix}`;
   };
 
   const [title, setTitle] = useState(getDefaultTitle());
@@ -63,6 +68,8 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
   }, [assetClass]);
 
   const [error, setError] = useState<string | null>(null);
+  const [showTaskDialog, setShowTaskDialog] = useState(false);
+  const [pendingWagerData, setPendingWagerData] = useState<{ title: string; assetClass: AssetClass; stake: number; linkedYearWagerId?: string } | null>(null);
 
   const handleExecute = async () => {
     if (!title.trim()) return;
@@ -102,16 +109,75 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
       }
     }
     
+    // For TDAY, show task dialog first
+    if (assetClass === 'TDAY') {
+      const linkedId = linkedYearWagerId === 'none' ? undefined : linkedYearWagerId;
+      setPendingWagerData({ title, assetClass, stake: stake[0], linkedYearWagerId: linkedId });
+      setShowTaskDialog(true);
+      return;
+    }
+    
+    // For other asset classes, proceed directly
     try {
       const linkedId = linkedYearWagerId === 'none' ? undefined : linkedYearWagerId;
-      await onExecute(title, assetClass, stake[0], linkedId);
+      const newWager = await onExecute(title, assetClass, stake[0], linkedId);
+      
+      // Reset form
       setTitle('');
       setStake([500]);
       setAssetClass('TDAY');
       setLinkedYearWagerId('none');
+      
+      // Close modal and stay on markets page
       onOpenChange(false);
+      // Refresh router to ensure data is updated
+      router.refresh();
     } catch (err: any) {
       setError(err.message || 'Failed to create wager. Please try again.');
+    }
+  };
+
+  const handleTasksConfirmed = async (tasks: string[]) => {
+    if (!pendingWagerData) return;
+    
+    try {
+      const newWager = await onExecute(
+        pendingWagerData.title,
+        pendingWagerData.assetClass,
+        pendingWagerData.stake,
+        pendingWagerData.linkedYearWagerId
+      );
+      
+      // Store tasks in localStorage with session ID
+      if (newWager?.id) {
+        const tasksData = tasks.map((title, index) => ({
+          id: `task-${index + 1}`,
+          title,
+          completed: false,
+          timebox: index === 0 ? 'morning' as const : index === 1 ? 'deep' as const : 'closing' as const,
+        }));
+        localStorage.setItem(`session_${newWager.id}_tasks`, JSON.stringify(tasksData));
+      }
+      
+      // Reset form
+      setTitle('');
+      setStake([500]);
+      setAssetClass('TDAY');
+      setLinkedYearWagerId('none');
+      
+      // Close modal
+      onOpenChange(false);
+      setShowTaskDialog(false);
+      setPendingWagerData(null);
+      
+      // Redirect to session page
+      if (newWager?.id) {
+        window.location.href = `/session/${newWager.id}`;
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to create wager. Please try again.');
+      setShowTaskDialog(false);
+      setPendingWagerData(null);
     }
   };
 
@@ -119,18 +185,18 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="glass-panel border-white/20 max-w-lg">
+      <DialogContent className="glass-panel border-white/20 max-w-md">
         {/* Header */}
-        <DialogHeader className="border-b border-white/[0.08] pb-4">
-          <DialogTitle className="label-text text-lg">
+        <DialogHeader className="border-b border-white/[0.08] pb-3">
+          <DialogTitle className="label-text text-base">
             NEW POSITION
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 mt-6">
+        <div className="space-y-5 mt-5">
           {/* Task Name Input - Large & Clean */}
           <div>
-            <label className="label-text mb-3 block">
+            <label className="label-text mb-2 block text-sm">
               POSITION NAME
             </label>
             <div className="relative group">
@@ -143,13 +209,13 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
                   zIndex: 0
                 }}
               />
-              <Input
-                ref={inputRef}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter your commitment..."
-                className="relative z-10 bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 h-12 text-white text-lg font-medium transition-all focus-visible:border-violet-500/60 focus-visible:bg-white/[0.05] focus-visible:shadow-[0_0_0_2px_rgba(139,92,246,0.4),0_0_20px_rgba(139,92,246,0.2)]"
-              />
+            <Input
+              ref={inputRef}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter your commitment..."
+                className="relative z-10 bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 h-10 text-white text-base font-medium transition-all focus-visible:border-violet-500/60 focus-visible:bg-white/[0.05] focus-visible:shadow-[0_0_0_2px_rgba(139,92,246,0.4),0_0_20px_rgba(139,92,246,0.2)]"
+            />
             </div>
           </div>
 
@@ -180,7 +246,7 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
                     <div className={`text-[10px] uppercase tracking-wider font-bold ${
                       assetClass === key ? 'text-slate-950/70' : 'text-zinc-500'
                     }`}>
-                      {config.duration} DAYS
+                      {key === 'TDAY' ? `${config.duration} HOURS` : `${config.duration} DAYS`}
                     </div>
                   </button>
                 );
@@ -191,11 +257,11 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
           {/* Link to Year Wager - Seamless Glass Dropdown */}
           {showLinkOption && (
             <div>
-              <label className="label-text mb-3 block">
+              <label className="label-text mb-2 block text-sm">
                 LINK TO $YEAR POSITION
               </label>
               <Select value={linkedYearWagerId} onValueChange={setLinkedYearWagerId}>
-                <SelectTrigger className="glass-panel h-12 text-white border-white/[0.08] focus:ring-1 focus:ring-lavender">
+                <SelectTrigger className="glass-panel h-10 text-white border-white/[0.08] focus:ring-1 focus:ring-lavender text-sm">
                   <SelectValue placeholder="Select a long-term bet..." />
                 </SelectTrigger>
                 <SelectContent className="glass-panel border-white/20">
@@ -207,7 +273,7 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-[10px] text-zinc-500 mt-2 uppercase tracking-wider">
+              <p className="text-[9px] text-zinc-500 mt-1.5 uppercase tracking-wider">
                 ↑ Completing this will restore health to the linked position
               </p>
             </div>
@@ -215,12 +281,12 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
 
           {/* Wager Slider - Thin Track with Glowing Green Orb */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <label className="label-text">
+            <div className="flex items-center justify-between mb-3">
+              <label className="label-text text-sm">
                 STAKE AMOUNT
               </label>
               <div 
-                className="data-text text-4xl font-bold text-amber-400"
+                className="data-text text-3xl font-bold text-amber-400"
                 style={{
                   textShadow: '0 0 80px rgba(251, 191, 36, 0.6), 0 0 120px rgba(251, 191, 36, 0.3)'
                 }}
@@ -235,9 +301,9 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
               min={100}
               max={5000}
               step={100}
-              className="w-full [&>div>div]:bg-amber-500 [&>div>div]:shadow-[0_0_12px_rgba(251,191,36,0.4)] [&_[role=slider]]:bg-amber-500 [&_[role=slider]]:border-amber-500 [&_[role=slider]]:shadow-[0_0_12px_rgba(251,191,36,0.6)] [&_[role=slider]]:w-5 [&_[role=slider]]:h-5"
+              className="w-full [&>div>div]:bg-amber-500 [&>div>div]:shadow-[0_0_12px_rgba(251,191,36,0.4)] [&_[role=slider]]:bg-amber-500 [&_[role=slider]]:border-amber-500 [&_[role=slider]]:shadow-[0_0_12px_rgba(251,191,36,0.6)] [&_[role=slider]]:w-4 [&_[role=slider]]:h-4"
             />
-            <div className="flex justify-between mt-3 label-text opacity-60">
+            <div className="flex justify-between mt-2 label-text opacity-60 text-xs">
               <span>$100</span>
               <span>$5,000</span>
             </div>
@@ -247,12 +313,22 @@ export default function ExchangeModal({ open, onOpenChange, onExecute, yearWager
           <Button
             onClick={handleExecute}
             disabled={!title.trim()}
-            className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold uppercase tracking-[0.25em] text-sm h-14 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(251,191,36,0.4),0_0_40px_rgba(234,179,8,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.6),0_0_60px_rgba(234,179,8,0.4)] transition-all"
+            className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold uppercase tracking-[0.25em] text-xs h-11 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(251,191,36,0.4),0_0_40px_rgba(234,179,8,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.6),0_0_60px_rgba(234,179,8,0.4)] transition-all"
           >
             EXECUTE ORDER
           </Button>
         </div>
       </DialogContent>
+      
+      {/* Task Input Dialog */}
+      <TaskInputDialog
+        open={showTaskDialog}
+        onClose={() => {
+          setShowTaskDialog(false);
+          setPendingWagerData(null);
+        }}
+        onConfirm={handleTasksConfirmed}
+      />
     </Dialog>
   );
 }

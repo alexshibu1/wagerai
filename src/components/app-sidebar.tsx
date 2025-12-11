@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '../../supabase/client';
 import Logo from './logo';
 import { 
@@ -36,15 +36,50 @@ export default function AppSidebar() {
   const router = useRouter();
   const supabase = createClient();
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
-  const navItems: NavItem[] = [
-    { 
-      href: '/session/new', 
-      icon: <Terminal size={18} />, 
-      label: 'Terminal',
-      sublabel: 'Lock In',
-      accentColor: 'violet'
-    },
+  // Check for active TDAY session
+  useEffect(() => {
+    const checkActiveSession = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setActiveSessionId(null);
+          return;
+        }
+
+        const today = new Date();
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+
+        const { data: activeWagers } = await supabase
+          .from('wagers')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('asset_class', 'TDAY')
+          .eq('status', 'OPEN')
+          .gte('created_at', startOfDay.toISOString())
+          .lte('created_at', endOfDay.toISOString())
+          .limit(1)
+          .single();
+
+        if (activeWagers) {
+          setActiveSessionId(activeWagers.id);
+        } else {
+          setActiveSessionId(null);
+        }
+      } catch (error) {
+        setActiveSessionId(null);
+      }
+    };
+
+    checkActiveSession();
+    // Check every 5 seconds for active sessions
+    const interval = setInterval(checkActiveSession, 5000);
+    return () => clearInterval(interval);
+  }, [supabase]);
+
+  const baseNavItems: NavItem[] = [
     { 
       href: '/markets', 
       icon: <Globe size={18} />, 
@@ -60,6 +95,20 @@ export default function AppSidebar() {
       accentColor: 'emerald'
     },
   ];
+
+  // Add Terminal link if there's an active session
+  const navItems: NavItem[] = activeSessionId
+    ? [
+        { 
+          href: `/session/${activeSessionId}`, 
+          icon: <Terminal size={18} />, 
+          label: 'Terminal',
+          sublabel: 'Lock In',
+          accentColor: 'violet'
+        },
+        ...baseNavItems
+      ]
+    : baseNavItems;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -121,61 +170,67 @@ export default function AppSidebar() {
         <Logo showWordmark={!isCollapsed} />
       </div>
 
-      {!isCollapsed && (
+      {!isCollapsed && activeSessionId && (
         <>
           {/* ============================================== */}
           {/* LIVE SESSION INDICATOR */}
           {/* ============================================== */}
           <div className="relative px-4 py-4">
-            <div 
-              className="relative flex items-center gap-3 px-4 py-3 rounded-xl overflow-hidden"
-              style={{
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)',
-                border: '1px solid rgba(16, 185, 129, 0.25)',
-                boxShadow: '0 4px 20px -8px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
-              }}
-            >
-              {/* Animated glow pulse */}
+            <Link href={`/session/${activeSessionId}`}>
               <div 
-                className="absolute inset-0 opacity-50"
+                className="relative flex items-center gap-3 px-4 py-3 rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.02]"
                 style={{
-                  background: 'radial-gradient(ellipse at 0% 50%, rgba(16, 185, 129, 0.3) 0%, transparent 70%)',
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  boxShadow: '0 4px 20px -8px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
                 }}
-              />
-              
-              {/* Zap icon with glow */}
-              <div className="relative">
+              >
+                {/* Animated glow pulse */}
                 <div 
-                  className="absolute inset-0 animate-ping"
-                  style={{ 
-                    background: 'rgba(16, 185, 129, 0.4)',
-                    borderRadius: '50%',
-                    filter: 'blur(4px)',
+                  className="absolute inset-0 opacity-50"
+                  style={{
+                    background: 'radial-gradient(ellipse at 0% 50%, rgba(16, 185, 129, 0.3) 0%, transparent 70%)',
                   }}
                 />
-                <Zap 
-                  size={16} 
-                  className="relative text-emerald-400" 
-                  fill="currentColor"
-                  style={{ filter: 'drop-shadow(0 0 6px rgba(16, 185, 129, 0.8))' }}
-                />
+                
+                {/* Zap icon with glow */}
+                <div className="relative">
+                  <div 
+                    className="absolute inset-0 animate-ping"
+                    style={{ 
+                      background: 'rgba(16, 185, 129, 0.4)',
+                      borderRadius: '50%',
+                      filter: 'blur(4px)',
+                    }}
+                  />
+                  <Zap 
+                    size={16} 
+                    className="relative text-emerald-400" 
+                    fill="currentColor"
+                    style={{ filter: 'drop-shadow(0 0 6px rgba(16, 185, 129, 0.8))' }}
+                  />
+                </div>
+                
+                <div className="relative flex flex-col">
+                  <span 
+                    className="text-xs font-bold tracking-wide"
+                    style={{ 
+                      color: '#34d399',
+                      textShadow: '0 0 10px rgba(16, 185, 129, 0.5)',
+                    }}
+                  >
+                    Session Active
+                  </span>
+                  <span className="text-[10px] text-emerald-400/60 font-mono">Click to open</span>
+                </div>
               </div>
-              
-              <div className="relative flex flex-col">
-                <span 
-                  className="text-xs font-bold tracking-wide"
-                  style={{ 
-                    color: '#34d399',
-                    textShadow: '0 0 10px rgba(16, 185, 129, 0.5)',
-                  }}
-                >
-                  Session Active
-                </span>
-                <span className="text-[10px] text-emerald-400/60 font-mono">02:34:18 elapsed</span>
-              </div>
-            </div>
+            </Link>
           </div>
+        </>
+      )}
 
+      {!isCollapsed && (
+        <>
       {/* ============================================== */}
       {/* NAVIGATION - Premium Nav Items */}
       {/* ============================================== */}

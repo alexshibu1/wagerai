@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, ArrowRight, Activity, BarChart3, CheckCircle2, Target, Flame, GitCommit, Sparkles, Trophy, Wallet, Clock, Zap } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 import AssetClassInfo from './asset-class-info';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import ContributionHeatmap from './contribution-heatmap';
 import { HeatmapDay } from '@/types/wager';
+import { getDeepWorkStats, getRecentSessionVolatility } from '@/app/actions/wager-actions';
 
 // =============================================================================
 // WAGER MOCK DATA
@@ -256,8 +257,75 @@ export default function ProfileView() {
   // Time range state for focus areas radar chart
   const [focusRange, setFocusRange] = useState<FocusTimeRange>('W');
   
+  // Real data state
+  const [deepWorkStats, setDeepWorkStats] = useState<{
+    totalHours: number;
+    thisWeekHours: number;
+    avgHoursPerDay: number;
+    bestDayHours: number;
+    totalBlocks: number;
+  } | null>(null);
+  const [sessionData, setSessionData] = useState<{
+    sessions: Array<{
+      id: string;
+      title: string;
+      completed_at: string;
+      final_volatility: number;
+      volatility_data: any;
+      created_at: string;
+    }>;
+    activeSession: { id: string; title: string; created_at: string } | null;
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Fetch real data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [stats, sessions] = await Promise.all([
+          getDeepWorkStats(),
+          getRecentSessionVolatility(7),
+        ]);
+        setDeepWorkStats(stats);
+        setSessionData(sessions);
+      } catch (err) {
+        console.error('Failed to fetch profile data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+  
   // Get the data for the selected time range
-  const selectedRangeData = TIME_RANGE_DATA[selectedRange].data;
+  // Use real session data if available, otherwise use mock data
+  const selectedRangeData = (() => {
+    if (selectedRange === '1D' && sessionData) {
+      // For today, show the most recent session or active session
+      const activeOrRecent = sessionData.activeSession 
+        ? { 
+            time: 'Now', 
+            value: 100, // Will be updated with real-time data if needed
+            isActive: true 
+          }
+        : sessionData.sessions[0] 
+          ? {
+              time: new Date(sessionData.sessions[0].completed_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+              value: sessionData.sessions[0].final_volatility || 100,
+            }
+          : null;
+      
+      if (activeOrRecent && sessionData.sessions[0]?.volatility_data) {
+        // Use real volatility data from the most recent session
+        const volatilityData = sessionData.sessions[0].volatility_data;
+        return volatilityData.map((point: any, index: number) => ({
+          time: point.time || `${index * 5}m`,
+          value: point.value || 100,
+        }));
+      }
+    }
+    return TIME_RANGE_DATA[selectedRange].data;
+  })();
   
   const startValue = EXECUTION_VOLATILITY_DATA[0].value;
   const currentValue = EXECUTION_VOLATILITY_DATA[EXECUTION_VOLATILITY_DATA.length - 1].value;
@@ -266,21 +334,37 @@ export default function ProfileView() {
   const isPositive = todayPnl >= 0;
 
   // Calculate stats based on selected range
-  const rangeStartValue = selectedRangeData[0].value;
-  const rangeEndValue = selectedRangeData[selectedRangeData.length - 1].value;
+  const rangeStartValue = selectedRangeData[0]?.value ?? 100;
+  const rangeEndValue = selectedRangeData[selectedRangeData.length - 1]?.value ?? 100;
   const rangePnl = rangeEndValue - rangeStartValue;
   const isRangePositive = rangePnl >= 0;
-  const rangeHigh = Math.max(...selectedRangeData.map(d => d.value));
-  const rangeLow = Math.min(...selectedRangeData.map(d => d.value));
+  const rangeHigh = selectedRangeData.length > 0 
+    ? Math.max(...selectedRangeData.map((d: { time: string; value: number }) => d.value))
+    : 100;
+  const rangeLow = selectedRangeData.length > 0
+    ? Math.min(...selectedRangeData.map((d: { time: string; value: number }) => d.value))
+    : 100;
 
-  // Today's high/low
-  const todayHigh = Math.max(...EXECUTION_VOLATILITY_DATA.map(d => d.value));
-  const todayLow = Math.min(...EXECUTION_VOLATILITY_DATA.map(d => d.value));
+  // Today's high/low - use real data if available
+  const todayHigh = sessionData?.sessions[0]?.volatility_data
+    ? Math.max(...sessionData.sessions[0].volatility_data.map((d: any) => d.value))
+    : Math.max(...EXECUTION_VOLATILITY_DATA.map(d => d.value));
+  const todayLow = sessionData?.sessions[0]?.volatility_data
+    ? Math.min(...sessionData.sessions[0].volatility_data.map((d: any) => d.value))
+    : Math.min(...EXECUTION_VOLATILITY_DATA.map(d => d.value));
 
-  // Last day's stats (previous work session)
-  const lastDayHigh = Math.max(...LAST_DAY_TDAY_DATA.map(d => d.value));
-  const lastDayLow = Math.min(...LAST_DAY_TDAY_DATA.map(d => d.value));
-  const lastDayClose = LAST_DAY_TDAY_DATA[LAST_DAY_TDAY_DATA.length - 1].value;
+  // Last day's stats (previous work session) - use second most recent session
+  const lastDayHigh = sessionData?.sessions[1]?.volatility_data
+    ? Math.max(...sessionData.sessions[1].volatility_data.map((d: any) => d.value))
+    : Math.max(...LAST_DAY_TDAY_DATA.map(d => d.value));
+  const lastDayLow = sessionData?.sessions[1]?.volatility_data
+    ? Math.min(...sessionData.sessions[1].volatility_data.map((d: any) => d.value))
+    : Math.min(...LAST_DAY_TDAY_DATA.map(d => d.value));
+  const lastDayClose = sessionData?.sessions[1]?.final_volatility 
+    || LAST_DAY_TDAY_DATA[LAST_DAY_TDAY_DATA.length - 1].value;
+  
+  // Check if there's an active session
+  const hasActiveSession = !!sessionData?.activeSession;
 
   return (
     <div className="w-full min-h-screen bg-[#030014] relative overflow-hidden">
@@ -577,8 +661,14 @@ export default function ProfileView() {
                     <div className="flex items-center gap-3">
                       <span className="text-sm font-medium text-zinc-400">$TDAY Index</span>
                       <span className={`text-lg font-mono font-bold ${isRangePositive ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {rangeEndValue}
+                        {typeof rangeEndValue === 'number' ? rangeEndValue.toFixed(0) : rangeEndValue}
                       </span>
+                      {hasActiveSession && (
+                        <span className="relative flex h-2 w-2" title="Active deep work session">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                        </span>
+                      )}
                       {/* Time Range Toggle - Tiny Pills */}
                       <div className="flex items-center gap-0.5 bg-white/[0.04] rounded p-0.5 ml-1">
                         {(['1D', '1W', '1M', '1Y'] as TimeRange[]).map((range) => (

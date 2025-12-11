@@ -19,20 +19,53 @@ export default function DashboardNavbar() {
   const router = useRouter()
   const pathname = usePathname()
   const [hasActiveSession, setHasActiveSession] = useState(false)
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
   const [isWagerModalOpen, setIsWagerModalOpen] = useState(false)
   
+  // Check for active TDAY session from database
   useEffect(() => {
-    const checkActiveSession = () => {
-      const activeSessionId = localStorage.getItem('activeSessionId')
-      setHasActiveSession(!!activeSessionId && !pathname.startsWith('/session'))
+    const checkActiveSession = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          setActiveSessionId(null)
+          setHasActiveSession(false)
+          return
+        }
+
+        const today = new Date()
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
+
+        const { data: activeWagers } = await supabase
+          .from('wagers')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('asset_class', 'TDAY')
+          .eq('status', 'OPEN')
+          .gte('created_at', startOfDay.toISOString())
+          .lte('created_at', endOfDay.toISOString())
+          .limit(1)
+          .single()
+
+        if (activeWagers) {
+          setActiveSessionId(activeWagers.id)
+          setHasActiveSession(!pathname.startsWith('/session'))
+        } else {
+          setActiveSessionId(null)
+          setHasActiveSession(false)
+        }
+      } catch (error) {
+        setActiveSessionId(null)
+        setHasActiveSession(false)
+      }
     }
     
     checkActiveSession()
-    
-    // Listen for storage changes
-    window.addEventListener('storage', checkActiveSession)
-    return () => window.removeEventListener('storage', checkActiveSession)
-  }, [pathname])
+    // Check every 5 seconds for active sessions
+    const interval = setInterval(checkActiveSession, 5000)
+    return () => clearInterval(interval)
+  }, [pathname, supabase])
 
   return (
     <>
@@ -46,9 +79,9 @@ export default function DashboardNavbar() {
             </Link>
             
             {/* Active Session Pill */}
-            {hasActiveSession && (
+            {hasActiveSession && activeSessionId && (
               <Link 
-                href={`/session/${localStorage.getItem('activeSessionId')}`}
+                href={`/session/${activeSessionId}`}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 transition-all animate-pulse-glow"
               >
                 <Zap size={12} className="animate-pulse" />

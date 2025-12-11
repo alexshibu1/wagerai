@@ -37,17 +37,50 @@ export default function FloatingSidebar() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
   
+  // Check for active TDAY session from database
   useEffect(() => {
-    const checkActiveSession = () => {
-      const sessionId = localStorage.getItem('activeSessionId')
-      setActiveSessionId(sessionId)
-      setHasActiveSession(!!sessionId && !pathname.startsWith('/session'))
+    const checkActiveSession = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          setActiveSessionId(null)
+          setHasActiveSession(false)
+          return
+        }
+
+        const today = new Date()
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
+
+        const { data: activeWagers } = await supabase
+          .from('wagers')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('asset_class', 'TDAY')
+          .eq('status', 'OPEN')
+          .gte('created_at', startOfDay.toISOString())
+          .lte('created_at', endOfDay.toISOString())
+          .limit(1)
+          .single()
+
+        if (activeWagers) {
+          setActiveSessionId(activeWagers.id)
+          setHasActiveSession(!pathname.startsWith('/session'))
+        } else {
+          setActiveSessionId(null)
+          setHasActiveSession(false)
+        }
+      } catch (error) {
+        setActiveSessionId(null)
+        setHasActiveSession(false)
+      }
     }
     
     checkActiveSession()
-    window.addEventListener('storage', checkActiveSession)
-    return () => window.removeEventListener('storage', checkActiveSession)
-  }, [pathname])
+    // Check every 5 seconds for active sessions
+    const interval = setInterval(checkActiveSession, 5000)
+    return () => clearInterval(interval)
+  }, [pathname, supabase])
 
   useEffect(() => {
     // Check authentication and fetch lightweight profile info
@@ -126,16 +159,25 @@ export default function FloatingSidebar() {
         onMouseLeave={() => setIsExpanded(false)}
       >
         {/* Logo / Brand */}
-        <Link
-          href="/markets"
+        <div
           className={`
             flex items-center h-12 mb-3 pb-3 border-b border-white/[0.06]
             group transition-all duration-300
             ${isExpanded ? 'px-2 gap-3' : 'justify-center'}
           `}
         >
-          <Logo showWordmark={isExpanded} />
-        </Link>
+          <Logo 
+            showWordmark={isExpanded} 
+            onClick={(e) => {
+              e.preventDefault()
+              if (activeSessionId) {
+                router.push(`/session/${activeSessionId}`)
+              } else {
+                router.push('/markets')
+              }
+            }}
+          />
+        </div>
 
         {/* New Position Button - Enhanced Glassy with Amber Theme */}
         {isAuthenticated && (

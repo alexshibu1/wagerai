@@ -79,7 +79,7 @@ export default function NewSessionPage() {
           
           {/* Header */}
           <div className="mb-8 text-center">
-            <h2 className="text-2xl font-bold text-white mb-2">New Position</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">Deep Work Terminal</h2>
             <p className="text-sm text-zinc-500">Lock in your focus contract</p>
           </div>
           

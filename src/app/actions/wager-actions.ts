@@ -87,6 +87,7 @@ export async function completeWager(wagerId: string) {
   await updateUserStats(user.id);
   revalidatePath('/dashboard');
   revalidatePath('/profile');
+  revalidatePath('/markets');
   
   return data;
 }
@@ -114,6 +115,7 @@ export async function failWager(wagerId: string) {
   await updateUserStats(user.id);
   revalidatePath('/dashboard');
   revalidatePath('/profile');
+  revalidatePath('/markets');
   
   return data;
 }
@@ -226,4 +228,186 @@ async function updateUserStats(userId: string) {
       longest_streak: longestStreak,
       updated_at: new Date().toISOString(),
     });
+}
+
+export async function saveDeepWorkBlock(
+  wagerId: string,
+  blockNumber: number,
+  taskTitle?: string,
+  durationSeconds: number = 5400
+) {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data, error } = await supabase
+    .from('deep_work_blocks')
+    .insert({
+      wager_id: wagerId,
+      user_id: user.id,
+      block_number: blockNumber,
+      task_title: taskTitle,
+      duration_seconds: durationSeconds,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  const { data: currentWager } = await supabase
+    .from('wagers')
+    .select('deep_work_blocks_completed')
+    .eq('id', wagerId)
+    .single();
+  
+  const { error: updateError } = await supabase
+    .from('wagers')
+    .update({ 
+      deep_work_blocks_completed: (currentWager?.deep_work_blocks_completed || 0) + 1
+    })
+    .eq('id', wagerId);
+
+  if (updateError) {
+    console.error('Failed to update deep work blocks count:', updateError);
+  }
+
+  revalidatePath('/profile');
+  
+  return data;
+}
+
+export async function saveSessionVolatility(
+  wagerId: string,
+  volatilityData: Array<{ time: string; value: number; event?: string }>,
+  finalVolatility: number
+) {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
+  // Insert all volatility data points
+  const volatilityInserts = volatilityData.map(point => ({
+    wager_id: wagerId,
+    user_id: user.id,
+    time_label: point.time,
+    value: point.value,
+    event_type: point.event || null,
+  }));
+
+  const { error: volatilityError } = await supabase
+    .from('session_volatility')
+    .insert(volatilityInserts);
+
+  if (volatilityError) throw volatilityError;
+
+  const { error: wagerError } = await supabase
+    .from('wagers')
+    .update({
+      volatility_data: volatilityData as any,
+      final_volatility: finalVolatility,
+    })
+    .eq('id', wagerId)
+    .eq('user_id', user.id);
+
+  if (wagerError) throw wagerError;
+
+  revalidatePath('/profile');
+  
+  return { success: true };
+}
+
+// Get deep work statistics for profile
+export async function getDeepWorkStats() {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: blocks, error: blocksError } = await supabase
+    .from('deep_work_blocks')
+    .select('duration_seconds, completed_at')
+    .eq('user_id', user.id)
+    .order('completed_at', { ascending: false });
+
+  if (blocksError) throw blocksError;
+
+  // Calculate stats
+  const totalHours = blocks
+    ? blocks.reduce((sum, block) => sum + (block.duration_seconds || 5400) / 3600, 0)
+    : 0;
+
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const thisWeekBlocks = blocks?.filter(
+    block => new Date(block.completed_at) >= weekAgo
+  ) || [];
+  const thisWeekHours = thisWeekBlocks.reduce(
+    (sum, block) => sum + (block.duration_seconds || 5400) / 3600,
+    0
+  );
+
+  // Calculate average per day (last 30 days)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const recentBlocks = blocks?.filter(
+    block => new Date(block.completed_at) >= thirtyDaysAgo
+  ) || [];
+  const avgHoursPerDay = recentBlocks.length > 0
+    ? (recentBlocks.reduce((sum, block) => sum + (block.duration_seconds || 5400) / 3600, 0) / 30)
+    : 0;
+
+  const blocksByDay = new Map<string, number>();
+  blocks?.forEach(block => {
+    const day = new Date(block.completed_at).toISOString().split('T')[0];
+    const hours = (block.duration_seconds || 5400) / 3600;
+    blocksByDay.set(day, (blocksByDay.get(day) || 0) + hours);
+  });
+  const bestDayHours = Math.max(...Array.from(blocksByDay.values()), 0);
+
+  return {
+    totalHours,
+    thisWeekHours,
+    avgHoursPerDay,
+    bestDayHours,
+    totalBlocks: blocks?.length || 0,
+  };
+}
+
+export async function getRecentSessionVolatility(days: number = 7) {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - days);
+
+  // Get completed TDAY wagers with volatility data
+  const { data: wagers, error: wagersError } = await supabase
+    .from('wagers')
+    .select('id, title, completed_at, final_volatility, volatility_data, created_at')
+    .eq('user_id', user.id)
+    .eq('asset_class', 'TDAY')
+    .in('status', ['WON', 'LOST'])
+    .gte('completed_at', cutoffDate.toISOString())
+    .order('completed_at', { ascending: false });
+
+  if (wagersError) throw wagersError;
+
+  const { data: activeWager } = await supabase
+    .from('wagers')
+    .select('id, title, created_at')
+    .eq('user_id', user.id)
+    .eq('asset_class', 'TDAY')
+    .eq('status', 'OPEN')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  return {
+    sessions: wagers || [],
+    activeSession: activeWager || null,
+  };
 }

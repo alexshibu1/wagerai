@@ -30,6 +30,27 @@ export default function PortfolioView() {
     loadData();
   }, []);
 
+  // Refresh data when page becomes visible again (e.g., after returning from session page)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadData();
+      }
+    };
+
+    const handleFocus = () => {
+      loadData();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
   const loadData = async () => {
     try {
       const [wagersData, statsData] = await Promise.all([
@@ -58,10 +79,12 @@ export default function PortfolioView() {
 
   const handleCreateWager = async (title: string, assetClass: AssetClass, stake: number, linkedYearWagerId?: string) => {
     try {
-      await createWager(title, assetClass, stake, linkedYearWagerId);
+      const newWager = await createWager(title, assetClass, stake, linkedYearWagerId);
       await loadData();
+      return newWager;
     } catch (error) {
       console.error('Error creating wager:', error);
+      return null;
     }
   };
 

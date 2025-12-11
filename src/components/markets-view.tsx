@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Sparkles, Timer, Wallet2, Users } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Sparkles, Timer, Wallet2, Users, Lock, X, Edit } from 'lucide-react';
 import ExchangeModal from './exchange-modal';
 import { Button } from './ui/button';
 import { Wager, AssetClass } from '@/types/wager';
-import { getUserWagers, createWager } from '@/app/actions/wager-actions';
+import { getUserWagers, createWager, completeWager, failWager } from '@/app/actions/wager-actions';
 import { ASSET_CLASS_CONFIG, calculateTimeRemaining, formatCurrency } from '@/lib/wager-utils';
 import { createClient } from '../../supabase/client';
 
@@ -23,6 +23,7 @@ type MarketCardData = {
   badge?: string;
   tone?: 'emerald' | 'blue' | 'amber';
   participants?: number;
+  wager?: Wager; // Full wager object for personal portfolio cards
 };
 
 const GLOBAL_MARKETS: MarketCardData[] = [
@@ -459,14 +460,44 @@ const GLOBAL_MARKETS: MarketCardData[] = [
 
 export default function MarketsView() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const [wagers, setWagers] = useState<Wager[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('global');
   const [isExchangeOpen, setIsExchangeOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Check for view query parameter on mount and when it changes
+  useEffect(() => {
+    const viewParam = searchParams.get('view');
+    if (viewParam === 'personal') {
+      setViewMode('personal');
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     loadData();
+  }, []);
+
+  // Refresh data when page becomes visible again (e.g., after returning from session page)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadData();
+      }
+    };
+
+    const handleFocus = () => {
+      loadData();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const loadData = async () => {
@@ -482,31 +513,20 @@ export default function MarketsView() {
 
   const handleCreateWager = async (title: string, assetClass: AssetClass, stake: number, linkedYearWagerId?: string) => {
     try {
-      await createWager(title, assetClass, stake, linkedYearWagerId);
+      const newWager = await createWager(title, assetClass, stake, linkedYearWagerId);
       await loadData();
-      setViewMode('personal');
+      
+      // For TDAY wagers, redirect will be handled by the modal
+      // For other asset classes, switch to personal view
+      if (assetClass !== 'TDAY') {
+        setViewMode('personal');
+      }
+      
+      // Return the wager so the modal can handle redirect
+      return newWager;
     } catch (error) {
       console.error('Error creating wager:', error);
-    }
-  };
-
-  const handleCompleteWager = async (wagerId: string) => {
-    try {
-      const { completeWager } = await import('@/app/actions/wager-actions');
-      await completeWager(wagerId);
-      await loadData();
-    } catch (error) {
-      console.error('Error completing wager:', error);
-    }
-  };
-
-  const handleFailWager = async (wagerId: string) => {
-    try {
-      const { failWager } = await import('@/app/actions/wager-actions');
-      await failWager(wagerId);
-      await loadData();
-    } catch (error) {
-      console.error('Error failing wager:', error);
+      throw error; // Re-throw so modal can show error
     }
   };
 
@@ -530,13 +550,33 @@ export default function MarketsView() {
           volume: `${formatCurrency(w.stake_amount)} staked`,
           user: '@you',
           yesProb: yesProbability,
-          timeLeft: `${deadlineInfo.days}d ${deadlineInfo.hours}h`,
+          timeLeft: w.asset_class === 'TDAY' 
+            ? `${deadlineInfo.hours}h ${deadlineInfo.minutes}m`
+            : `${deadlineInfo.days}d ${deadlineInfo.hours}h`,
           badge: w.asset_class,
           tone: w.asset_class === 'TDAY' ? 'emerald' : w.asset_class === 'SHIP' ? 'blue' : 'amber',
-          wager: w, // Include full wager object for handlers
+          wager: w, // Pass full wager object for TDAY actions
         };
       });
   }, [wagers]);
+
+  const handleCompleteWager = async (wagerId: string) => {
+    try {
+      await completeWager(wagerId);
+      await loadData();
+    } catch (error) {
+      console.error('Error completing wager:', error);
+    }
+  };
+
+  const handleFailWager = async (wagerId: string) => {
+    try {
+      await failWager(wagerId);
+      await loadData();
+    } catch (error) {
+      console.error('Error failing wager:', error);
+    }
+  };
 
   const cardsToShow = viewMode === 'global' ? GLOBAL_MARKETS : personalCards;
   const yearWagers = wagers.filter(w => w.asset_class === 'YEAR' && w.status === 'OPEN');
@@ -616,7 +656,14 @@ export default function MarketsView() {
           ) : (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
               {cardsToShow.map(card => (
-                <MarketCard key={card.id} data={card} onClick={() => router.push(`/markets/${card.id}`)} />
+                <MarketCard 
+                  key={card.id} 
+                  data={card} 
+                  onClick={() => router.push(`/markets/${card.id}`)}
+                  onComplete={viewMode === 'personal' && card.wager ? handleCompleteWager : undefined}
+                  onClose={viewMode === 'personal' && card.wager ? handleFailWager : undefined}
+                  isPersonal={viewMode === 'personal'}
+                />
               ))}
             </div>
           )}
@@ -633,7 +680,80 @@ export default function MarketsView() {
   );
 }
 
-function MarketCard({ data, onClick }: { data: MarketCardData; onClick: () => void }) {
+function MarketCard({ 
+  data, 
+  onClick,
+  onComplete,
+  onClose,
+  isPersonal = false
+}: { 
+  data: MarketCardData; 
+  onClick: () => void;
+  onComplete?: (wagerId: string) => void;
+  onClose?: (wagerId: string) => void;
+  isPersonal?: boolean;
+}) {
+  const router = useRouter();
+  const [timeRemaining, setTimeRemaining] = useState(data.timeLeft);
+  const isTdayWager = data.wager?.asset_class === 'TDAY' && data.wager?.status === 'OPEN';
+  const isNonTdayWager = isPersonal && data.wager && data.wager.asset_class !== 'TDAY' && data.wager.status === 'OPEN';
+  
+  // Countdown timer for all wagers in portfolio
+  useEffect(() => {
+    if (!data.wager) {
+      // For global markets, use static timeLeft
+      setTimeRemaining(data.timeLeft);
+      return;
+    }
+    
+    const updateTimer = () => {
+      const deadlineInfo = calculateTimeRemaining(data.wager!.deadline);
+      if (deadlineInfo.isExpired) {
+        setTimeRemaining('Expired');
+        return;
+      }
+      
+      // Format based on asset class
+      if (data.wager!.asset_class === 'TDAY') {
+        // For TDAY, show hours:minutes:seconds (16 hour timer)
+        setTimeRemaining(`${deadlineInfo.hours}h ${deadlineInfo.minutes}m ${deadlineInfo.seconds}s`);
+      } else if (data.wager!.asset_class === 'SHIP') {
+        // For SHIP, show days and hours
+        setTimeRemaining(`${deadlineInfo.days}d ${deadlineInfo.hours}h ${deadlineInfo.minutes}m`);
+      } else {
+        // For YEAR, show days
+        setTimeRemaining(`${deadlineInfo.days}d ${deadlineInfo.hours}h`);
+      }
+    };
+    
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    
+    return () => clearInterval(interval);
+  }, [data.wager, data.timeLeft]);
+  
+  const handleLockIn = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Navigate to the active session instead of completing the wager
+    if (data.wager && isTdayWager) {
+      router.push(`/session/${data.wager.id}`);
+    }
+  };
+  
+  const handleClose = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onClose && data.wager) {
+      // Confirm before closing (money lost)
+      if (confirm('Are you sure? Closing before the timer ends will result in a loss of your stake.')) {
+        onClose(data.wager.id);
+      }
+    }
+  };
+
+  const handleUpdate = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClick(); // Navigate to market detail page for updates
+  };
   const toneStyles =
     data.tone === 'blue'
       ? {
@@ -688,46 +808,129 @@ function MarketCard({ data, onClick }: { data: MarketCardData; onClick: () => vo
         </p>
       </div>
 
-      {/* Yes/No Buttons */}
-      <div className="relative z-10 flex items-center gap-2 flex-1 mt-2">
-        <button
-          className="flex-1 flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-semibold text-white transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-[0.98] bg-gradient-to-r from-emerald-500 to-green-500"
-          style={{
-            boxShadow: '0 0 20px rgba(16, 185, 129, 0.6), 0 0 40px rgba(16, 185, 129, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 0 30px rgba(16, 185, 129, 0.8), 0 0 60px rgba(16, 185, 129, 0.5), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.6), 0 0 40px rgba(16, 185, 129, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onClick();
-          }}
-        >
-          <span>Yes</span>
-          <span>{data.yesProb}%</span>
-        </button>
-        <button
-          className="flex-1 flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-semibold text-white transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-[0.98] bg-gradient-to-r from-red-500 to-rose-500"
-          style={{
-            boxShadow: '0 0 20px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 0 30px rgba(239, 68, 68, 0.8), 0 0 60px rgba(239, 68, 68, 0.5), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onClick();
-          }}
-        >
-          <span>No</span>
-          <span>{noProb}%</span>
-        </button>
+      {/* Action Buttons - Pushed toward bottom */}
+      <div className="relative z-10 flex flex-col gap-2 mt-auto mb-2">
+        {/* Yes/No Buttons - For global market cards (not in portfolio) */}
+        {!isPersonal || !data.wager ? (
+          <div className="flex items-center gap-2">
+            <button
+              className="flex-1 flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-semibold text-white transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-[0.98] bg-gradient-to-r from-emerald-500 to-green-500"
+              style={{
+                boxShadow: '0 0 20px rgba(16, 185, 129, 0.6), 0 0 40px rgba(16, 185, 129, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 30px rgba(16, 185, 129, 0.8), 0 0 60px rgba(16, 185, 129, 0.5), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.6), 0 0 40px rgba(16, 185, 129, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick();
+              }}
+            >
+              <span>Yes</span>
+              <span>{data.yesProb}%</span>
+            </button>
+            <button
+              className="flex-1 flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-semibold text-white transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-[0.98] bg-gradient-to-r from-red-500 to-rose-500"
+              style={{
+                boxShadow: '0 0 20px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 30px rgba(239, 68, 68, 0.8), 0 0 60px rgba(239, 68, 68, 0.5), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick();
+              }}
+            >
+              <span>No</span>
+              <span>{noProb}%</span>
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Lock In/Close Buttons - Only for TDAY wagers in portfolio */}
+            {isTdayWager && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleLockIn}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[13px] font-semibold text-white transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-[0.98] bg-gradient-to-r from-emerald-500 to-green-500"
+                  style={{
+                    boxShadow: '0 0 20px rgba(16, 185, 129, 0.6), 0 0 40px rgba(16, 185, 129, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = '0 0 30px rgba(16, 185, 129, 0.8), 0 0 60px rgba(16, 185, 129, 0.5), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.6), 0 0 40px rgba(16, 185, 129, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
+                  }}
+                >
+                  <Lock size={14} />
+                  <span>Lock In</span>
+                </button>
+                <button
+                  onClick={handleClose}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[13px] font-semibold text-white transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-[0.98] bg-gradient-to-r from-red-500 to-rose-500"
+                  style={{
+                    boxShadow: '0 0 20px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = '0 0 30px rgba(239, 68, 68, 0.8), 0 0 60px rgba(239, 68, 68, 0.5), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
+                  }}
+                >
+                  <X size={14} />
+                  <span>Close</span>
+                </button>
+              </div>
+            )}
+            
+            {/* Update/Close Buttons - For non-TDAY wagers (SHIP, YEAR) in portfolio */}
+            {isNonTdayWager && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleUpdate}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[13px] font-semibold text-white transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-[0.98] bg-gradient-to-r from-blue-500 to-cyan-500"
+                  style={{
+                    boxShadow: '0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = '0 0 30px rgba(59, 130, 246, 0.8), 0 0 60px rgba(59, 130, 246, 0.5), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
+                  }}
+                >
+                  <Edit size={14} />
+                  <span>Update</span>
+                </button>
+                <button
+                  onClick={handleClose}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[13px] font-semibold text-white transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-[0.98] bg-gradient-to-r from-red-500 to-rose-500"
+                  style={{
+                    boxShadow: '0 0 20px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = '0 0 30px rgba(239, 68, 68, 0.8), 0 0 60px rgba(239, 68, 68, 0.5), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.3), inset 0 -2px 15px -4px rgba(255, 255, 255, 0.3)';
+                  }}
+                >
+                  <X size={14} />
+                  <span>Close</span>
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
       
       {/* Footer - Aligned to bottom */}
@@ -736,10 +939,18 @@ function MarketCard({ data, onClick }: { data: MarketCardData; onClick: () => vo
           <Wallet2 size={12} />
           <span className="text-[13px]">{data.volume}</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Timer size={12} />
-          <span className="text-[13px]">{data.timeLeft}</span>
-        </div>
+        {/* Timer - Smaller, aligned to right */}
+        {data.wager ? (
+          <div className="flex items-center gap-1.5">
+            <Timer size={10} className="text-amber-400/70" />
+            <span className="text-[11px] font-mono text-amber-400/70">{timeRemaining}</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <Timer size={12} />
+            <span className="text-[13px]">{data.timeLeft}</span>
+          </div>
+        )}
       </div>
     </div>
   );

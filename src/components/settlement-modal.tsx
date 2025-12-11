@@ -42,13 +42,25 @@ export default function SettlementModal({
   const completedTasks = tasks.filter(t => t.completed);
   const completionRate = (completedTasks.length / tasks.length) * 100;
   
-  // Calculate P&L
+  // Calculate P&L with enhanced multipliers
   const baseEarnings = (baseWager * completionRate) / 100;
+  
+  // Enhanced multiplier bonus - tasks completed during deep work get 2x, others get 1.5x
   const multiplierBonus = completedTasks.reduce((sum, task) => {
-    return sum + (task.multiplier ? (baseWager / tasks.length) * (task.multiplier - 1) : 0);
+    const taskMultiplier = task.multiplier || 1.0;
+    const taskBaseValue = baseWager / tasks.length;
+    const bonus = taskBaseValue * (taskMultiplier - 1);
+    return sum + bonus;
   }, 0);
   
-  const totalEarnings = baseEarnings + multiplierBonus + deepWorkBonus;
+  // Volatility bonus - higher final volatility = more money
+  const finalVolatility = volatilityData.length > 0 
+    ? volatilityData[volatilityData.length - 1].value 
+    : 100;
+  const volatilityMultiplier = Math.max(0.5, Math.min(2.0, finalVolatility / 100)); // 0.5x to 2.0x based on volatility
+  const volatilityBonus = (baseEarnings + multiplierBonus) * (volatilityMultiplier - 1) * 0.3; // 30% of base affected by volatility
+  
+  const totalEarnings = baseEarnings + multiplierBonus + deepWorkBonus + volatilityBonus;
   const netPL = totalEarnings - baseWager;
   const isProfit = netPL > 0;
 
@@ -129,14 +141,22 @@ export default function SettlementModal({
                 </div>
                 {multiplierBonus > 0 && (
                   <div className="flex justify-between items-center">
-                    <span className="label-text">DEEP WORK BONUS</span>
+                    <span className="label-text">TASK MULTIPLIER BONUS</span>
                     <span className="data-text text-sm neon-mint">+{formatCurrency(multiplierBonus)}</span>
                   </div>
                 )}
                 {deepWorkBonus > 0 && (
                   <div className="flex justify-between items-center">
-                    <span className="label-text">SESSION BONUS</span>
+                    <span className="label-text">DEEP WORK SESSION BONUS</span>
                     <span className="data-text text-sm neon-mint">+{formatCurrency(deepWorkBonus)}</span>
+                  </div>
+                )}
+                {volatilityBonus !== undefined && volatilityBonus !== 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="label-text">VOLATILITY PERFORMANCE</span>
+                    <span className={`data-text text-sm ${volatilityBonus > 0 ? 'neon-mint' : 'text-soft-rose'}`}>
+                      {volatilityBonus > 0 ? '+' : ''}{formatCurrency(volatilityBonus)}
+                    </span>
                   </div>
                 )}
                 <div className="h-px bg-white/10 my-2"></div>
@@ -192,7 +212,13 @@ export default function SettlementModal({
                     <div className={`data-text text-sm font-bold ${
                       task.completed ? 'neon-mint' : 'text-red-500'
                     }`}>
-                      {task.completed ? '+' : '-'}{formatCurrency(baseWager / tasks.length)}
+                      {task.completed ? '+' : '-'}
+                      {formatCurrency((baseWager / tasks.length) * (task.multiplier || 1.0))}
+                      {task.multiplier && task.multiplier > 1 && (
+                        <span className="text-[10px] ml-1 opacity-70">
+                          ({task.multiplier}x)
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

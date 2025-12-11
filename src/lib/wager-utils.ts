@@ -6,7 +6,7 @@ export const ASSET_CLASS_CONFIG = {
     name: 'Intraday',
     symbol: '$TDAY',
     description: 'Daily tasks',
-    duration: 1,
+    duration: 16, // 16 hours instead of 1 day
     color: '#00C805',
   },
   SHIP: {
@@ -23,11 +23,15 @@ export const ASSET_CLASS_CONFIG = {
     duration: 365,
     color: '#00C805',
   },
-};
+} as const;
 
 export function getDeadlineForAssetClass(assetClass: AssetClass): Date {
   const now = new Date();
   const config = ASSET_CLASS_CONFIG[assetClass];
+  if (assetClass === 'TDAY') {
+    // For TDAY, add 16 hours instead of days
+    return new Date(now.getTime() + config.duration * 60 * 60 * 1000);
+  }
   return addDays(now, config.duration);
 }
 

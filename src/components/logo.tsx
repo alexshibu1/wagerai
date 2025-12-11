@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 interface LogoProps {
   showWordmark?: boolean;
   className?: string;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 /**
@@ -14,13 +15,9 @@ interface LogoProps {
  * pulsing status dot to signal "live". Hover rotation is handled via motion
  * for smoothness and easing.
  */
-export default function Logo({ showWordmark = true, className = '' }: LogoProps) {
-  return (
-    <Link
-      href="/markets"
-      aria-label="Go to markets"
-      className={`group relative inline-flex items-center ${showWordmark ? 'gap-3' : ''} ${className}`}
-    >
+export default function Logo({ showWordmark = true, className = '', onClick }: LogoProps) {
+  const content = (
+    <>
       <div className="relative flex items-center justify-center w-11 h-11">
         <motion.div
           className="relative w-full h-full"
@@ -56,6 +53,28 @@ export default function Logo({ showWordmark = true, className = '' }: LogoProps)
           </motion.div>
         )}
       </AnimatePresence>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <div
+        onClick={onClick}
+        aria-label="Go to markets or active session"
+        className={`group relative inline-flex items-center cursor-pointer ${showWordmark ? 'gap-3' : ''} ${className}`}
+      >
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href="/markets"
+      aria-label="Go to markets"
+      className={`group relative inline-flex items-center ${showWordmark ? 'gap-3' : ''} ${className}`}
+    >
+      {content}
     </Link>
   );
 }

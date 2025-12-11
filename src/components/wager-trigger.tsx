@@ -160,7 +160,7 @@ export function WagerTrigger({ amount, onConfirm, disabled }: WagerTriggerProps)
                     damping: 15,
                     delay: 0.1
                   }}
-                >
+              >
                   <Check className="w-5 h-5" />
                 </motion.div>
                 <motion.span

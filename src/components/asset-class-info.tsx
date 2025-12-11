@@ -50,7 +50,7 @@ export default function AssetClassInfo() {
             </p>
             <p className="text-xs text-zinc-400">
               <span className="text-zinc-300 font-medium">Expiry:</span>{' '}
-              <span className="text-amber-400">12 Hours.</span> If not closed (completed) by midnight, 
+              <span className="text-amber-400">16 Hours.</span> If not closed (completed) before the timer ends, 
               the position is <span className="text-rose-400">Liquidated (-100% loss)</span>.
             </p>
           </div>

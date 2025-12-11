@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { USER_STATS } from '@/lib/mock-data';
 import { WagerTrigger } from './wager-trigger';
-import { useWager } from '@/hooks/use-wager';
 import { AssetClass } from '@/types/wager';
 import { ASSET_CLASS_CONFIG } from '@/lib/wager-utils';
 import AssetClassInfo from './asset-class-info';
 import { createClient } from '../../supabase/client';
+import { createWager } from '@/app/actions/wager-actions';
+import TaskInputDialog from './task-input-dialog';
 
 interface WagerModalProps {
   isOpen: boolean;
@@ -21,12 +22,15 @@ interface WagerModalProps {
 export default function WagerModal({ isOpen, onClose }: WagerModalProps) {
   const router = useRouter();
   const supabase = createClient();
-  const { placeWager } = useWager();
   
-  // Generate default title: "Daily Session: [Current Date]"
   const getDefaultTitle = () => {
     const today = new Date();
-    return `Daily Session: ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    const month = today.toLocaleDateString('en-US', { month: 'short' });
+    const day = today.getDate();
+    const suffix = day === 1 || day === 21 || day === 31 ? 'st' :
+                  day === 2 || day === 22 ? 'nd' :
+                  day === 3 || day === 23 ? 'rd' : 'th';
+    return `Daily Session: ${month} ${day}${suffix}`;
   };
   
   // Form state
@@ -80,6 +84,8 @@ export default function WagerModal({ isOpen, onClose }: WagerModalProps) {
   const totalPayout = Math.round(baseStake * getStakeMultiplier());
   
   const [error, setError] = useState<string | null>(null);
+  const [showTaskDialog, setShowTaskDialog] = useState(false);
+  const [pendingWagerData, setPendingWagerData] = useState<{ contractName: string; assetClass: AssetClass; stake: number } | null>(null);
 
   const handleLockIn = async () => {
     if (!contractName.trim()) return;
@@ -119,18 +125,59 @@ export default function WagerModal({ isOpen, onClose }: WagerModalProps) {
       }
     }
     
-    // Convert asset class duration to minutes for the hook
-    // TDAY=1 day = 1440 minutes, SHIP=30 days = 43200 minutes, YEAR=365 days = 525600 minutes
-    const duration = ASSET_CLASS_CONFIG[assetClass].duration * 24 * 60;
+    // For TDAY, show task dialog first
+    if (assetClass === 'TDAY') {
+      setPendingWagerData({ contractName, assetClass, stake: stakeAmount[0] });
+      setShowTaskDialog(true);
+      return;
+    }
     
+    // For other asset classes, proceed directly
     try {
-      // Use the hook to place the wager
-      await placeWager(contractName, stakeAmount[0], duration);
-      
-      // Close modal (navigation is handled by hook, but we can close modal here)
+      const newWager = await createWager(contractName, assetClass, stakeAmount[0]);
       onClose();
+      router.push('/markets?view=personal');
+      router.refresh();
     } catch (err: any) {
       setError(err.message || 'Failed to create wager. Please try again.');
+    }
+  };
+
+  const handleTasksConfirmed = async (tasks: string[]) => {
+    if (!pendingWagerData) return;
+    
+    try {
+      // Create the wager
+      const newWager = await createWager(
+        pendingWagerData.contractName,
+        pendingWagerData.assetClass,
+        pendingWagerData.stake
+      );
+      
+      // Store tasks in localStorage with session ID
+      if (newWager?.id) {
+        const tasksData = tasks.map((title, index) => ({
+          id: `task-${index + 1}`,
+          title,
+          completed: false,
+          timebox: index === 0 ? 'morning' as const : index === 1 ? 'deep' as const : 'closing' as const,
+        }));
+        localStorage.setItem(`session_${newWager.id}_tasks`, JSON.stringify(tasksData));
+      }
+      
+      // Close modal
+      onClose();
+      setShowTaskDialog(false);
+      setPendingWagerData(null);
+      
+      // Redirect to session page
+      if (newWager?.id) {
+        window.location.href = `/session/${newWager.id}`;
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to create wager. Please try again.');
+      setShowTaskDialog(false);
+      setPendingWagerData(null);
     }
   };
   
@@ -222,7 +269,7 @@ export default function WagerModal({ isOpen, onClose }: WagerModalProps) {
                 <Input
                   ref={inputRef}
                   type="text"
-                  placeholder={assetClass === 'TDAY' ? "Daily Session: Dec 10, 2025" : "Enter your commitment..."}
+                  placeholder={assetClass === 'TDAY' ? getDefaultTitle() : "Enter your commitment..."}
                   value={contractName}
                   onChange={(e) => setContractName(e.target.value)}
                   className="relative z-10 bg-white/5 backdrop-blur-sm border-white/10 text-white h-12 text-base placeholder:text-zinc-500 transition-all focus-visible:border-amber-500/60 focus-visible:bg-white/[0.05] focus-visible:shadow-[0_0_0_2px_rgba(251,191,36,0.4),0_0_20px_rgba(251,191,36,0.2)]"
@@ -266,7 +313,7 @@ export default function WagerModal({ isOpen, onClose }: WagerModalProps) {
                       <div className={`text-[10px] uppercase tracking-wider font-bold ${
                         assetClass === key ? 'text-slate-950/70' : 'text-zinc-400'
                       }`}>
-                        {config.duration} DAYS
+                        {key === 'TDAY' ? `${config.duration} HOURS` : `${config.duration} DAYS`}
                       </div>
                     </button>
                   );
@@ -363,6 +410,16 @@ export default function WagerModal({ isOpen, onClose }: WagerModalProps) {
           </div>
         </div>
       </div>
+      
+      {/* Task Input Dialog */}
+      <TaskInputDialog
+        open={showTaskDialog}
+        onClose={() => {
+          setShowTaskDialog(false);
+          setPendingWagerData(null);
+        }}
+        onConfirm={handleTasksConfirmed}
+      />
       
       <style jsx>{`
         @keyframes gradient-shift {
