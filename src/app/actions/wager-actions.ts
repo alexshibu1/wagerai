@@ -124,7 +124,10 @@ export async function getUserWagers() {
   const supabase = await createClient();
   
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Not authenticated');
+  if (!user) {
+    // Return empty array instead of throwing - allows components to handle unauthenticated state gracefully
+    return [];
+  }
 
   const { data, error } = await supabase
     .from('wagers')
@@ -141,7 +144,10 @@ export async function getUserStats() {
   const supabase = await createClient();
   
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Not authenticated');
+  if (!user) {
+    // Return null instead of throwing - allows components to handle unauthenticated state gracefully
+    return null;
+  }
 
   const { data, error } = await supabase
     .from('user_stats')

@@ -27,19 +27,34 @@ export default function PortfolioView() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadData();
+    // Only load data if user is authenticated
+    const checkAndLoad = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        loadData();
+      }
+    };
+    checkAndLoad();
   }, []);
 
   // Refresh data when page becomes visible again (e.g., after returning from session page)
   useEffect(() => {
-    const handleVisibilityChange = () => {
+    const handleVisibilityChange = async () => {
       if (document.visibilityState === 'visible') {
-        loadData();
+        // Check if user is authenticated before loading data
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          loadData();
+        }
       }
     };
 
-    const handleFocus = () => {
-      loadData();
+    const handleFocus = async () => {
+      // Check if user is authenticated before loading data
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        loadData();
+      }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);

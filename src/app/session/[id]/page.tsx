@@ -1071,22 +1071,35 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
           <div className="mb-6">
             {/* Time Display - Centered */}
             <div className="text-center mb-4">
-              <h1 className="text-2xl font-bold text-white mb-1">Welcome {userName}</h1>
-              <p className="text-lg text-zinc-400 mb-4">Deep Work Terminal</p>
+              <h1 className="text-2xl font-medium text-zinc-300 mb-1 tracking-wide" style={{ fontFamily: '"Space Grotesk", sans-serif' }}>Welcome {userName}</h1>
+              <p className="text-sm text-cyan-400/70 mb-6 uppercase tracking-[0.3em] font-medium">Deep Work Terminal</p>
               <div className="relative inline-block">
                 <div 
-                  className="text-9xl font-black mb-4 tabular-nums relative text-white"
+                  className="mb-4 tabular-nums relative"
                   style={{
-                    fontFamily: '"Bungee", cursive',
-                    letterSpacing: '0.02em',
-                    fontWeight: 400,
-                    fontSize: '10rem',
+                    fontFamily: '"JetBrains Mono", "SF Mono", "Fira Code", monospace',
+                    letterSpacing: '-0.02em',
+                    fontWeight: 200,
+                    fontSize: '9rem',
+                    background: 'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.7) 50%, rgba(6,182,212,0.5) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    textShadow: '0 0 80px rgba(6,182,212,0.3)',
                   }}
                 >
                   {String(currentTime.hours).padStart(2, '0')}:
                   {String(currentTime.minutes).padStart(2, '0')}:
                   {String(currentTime.seconds).padStart(2, '0')}
-                  <span className="text-6xl ml-4 text-white">{currentTime.period}</span>
+                  <span 
+                    className="ml-4"
+                    style={{
+                      fontSize: '3rem',
+                      fontWeight: 300,
+                      background: 'linear-gradient(180deg, rgba(161,161,170,1) 0%, rgba(6,182,212,0.6) 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >{currentTime.period}</span>
                 </div>
               </div>
             </div>
@@ -1108,26 +1121,27 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
                         return (
                           <div
                             key={block.id}
-                            className="w-[240px] h-[80px] px-4 py-3 rounded-xl border border-violet-500/30 backdrop-blur-sm flex items-center overflow-hidden"
+                            className="w-[260px] h-[85px] px-5 py-3 rounded-xl border border-cyan-500/30 backdrop-blur-md flex items-center overflow-hidden"
                             style={{
-                              background: 'linear-gradient(165deg, rgba(139, 92, 246, 0.12) 0%, rgba(10, 10, 15, 0.95) 100%)',
+                              background: 'linear-gradient(165deg, rgba(6, 182, 212, 0.12) 0%, rgba(10, 10, 15, 0.95) 100%)',
+                              boxShadow: '0 0 30px rgba(6, 182, 212, 0.15)',
                             }}
                           >
-                            <div className="flex items-center gap-3 w-full min-w-0">
-                              <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center flex-shrink-0">
-                                <Zap size={16} className="text-violet-400" />
+                            <div className="flex items-center gap-4 w-full min-w-0">
+                              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center flex-shrink-0 border border-cyan-500/20">
+                                <Zap size={18} className="text-cyan-400" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="text-[10px] uppercase tracking-wider text-violet-400/80 mb-0.5 leading-tight">
+                                <div className="text-[10px] uppercase tracking-[0.2em] text-cyan-400/80 mb-1 leading-tight font-mono">
                                   Deep Work Block
                                 </div>
-                                <div className="text-sm font-mono font-bold text-violet-400 leading-tight mb-0.5">
+                                <div className="text-lg font-mono font-medium text-white leading-tight mb-0.5" style={{ letterSpacing: '-0.02em' }}>
                                   {String(hours).padStart(2, '0')}:
                                   {String(minutes).padStart(2, '0')}:
                                   {String(seconds).padStart(2, '0')}
                                 </div>
                                 {task && (
-                                  <div className="text-[10px] text-zinc-400 truncate leading-tight">
+                                  <div className="text-[10px] text-zinc-500 truncate leading-tight">
                                     {task.title}
                                   </div>
                                 )}
@@ -1263,49 +1277,63 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
                 {deepWorkBlocks.map((block) => (
                   <div
                     key={block.id}
-                    className={`px-4 py-3 rounded-lg border flex items-center justify-between transition-all ${
+                    className={`px-5 py-4 rounded-xl border flex items-center justify-between transition-all ${
                       block.completed
-                        ? 'bg-slate-900/30 border-white/5 opacity-50'
-                        : 'bg-slate-900/50 border-white/10'
+                        ? 'bg-zinc-900/30 border-zinc-700/30 opacity-60'
+                        : block.active
+                          ? 'bg-gradient-to-r from-emerald-950/40 to-teal-950/30 border-emerald-500/30 shadow-lg shadow-emerald-500/10'
+                          : 'bg-zinc-900/40 border-zinc-700/40 hover:border-emerald-500/30 hover:bg-zinc-900/60'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <Zap 
-                        size={16} 
-                        className={block.completed ? 'text-zinc-600' : 'text-emerald-400'} 
-                      />
-                      <span className={`font-medium ${
-                        block.completed ? 'text-zinc-500 line-through' : 'text-white'
+                    <div className="flex items-center gap-4">
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                        block.completed 
+                          ? 'bg-zinc-800/50' 
+                          : block.active 
+                            ? 'bg-emerald-500/20' 
+                            : 'bg-zinc-800/80'
                       }`}>
-                        Deep Work Block
-                      </span>
-                      {block.active && (
-                        <span className="text-xs text-emerald-400 font-bold">1.5X MULTIPLIER ACTIVE</span>
-                      )}
-                      {block.completed && (
-                        <span className="text-xs text-zinc-500 font-bold">COMPLETED</span>
-                      )}
+                        <Zap 
+                          size={18} 
+                          className={block.completed ? 'text-zinc-600' : block.active ? 'text-emerald-400' : 'text-zinc-400'} 
+                        />
+                      </div>
+                      <div>
+                        <span className={`font-medium block ${
+                          block.completed ? 'text-zinc-500 line-through' : 'text-white'
+                        }`}>
+                          Deep Work Block
+                        </span>
+                        {block.active && (
+                          <span className="text-[10px] text-emerald-400 font-mono uppercase tracking-wider">1.5X MULTIPLIER ACTIVE</span>
+                        )}
+                        {block.completed && (
+                          <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">COMPLETED</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       {block.active ? (
                         <>
-                          <span className="text-emerald-400 font-mono text-lg">
-                            {Math.floor(block.remainingSeconds / 60)}:
-                            {String(block.remainingSeconds % 60).padStart(2, '0')}
-                          </span>
+                          <div className="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                            <span className="text-emerald-400 font-mono text-lg font-medium tracking-tight">
+                              {Math.floor(block.remainingSeconds / 60)}:
+                              {String(block.remainingSeconds % 60).padStart(2, '0')}
+                            </span>
+                          </div>
                           <Button
                             onClick={() => handleCancelDeepWork(block.id)}
-                            className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1"
+                            className="bg-red-600/80 hover:bg-red-600 text-white text-xs px-4 py-1.5 font-mono uppercase tracking-wider"
                           >
                             CANCEL
                           </Button>
                         </>
                       ) : block.completed ? (
-                        <span className="text-xs text-zinc-500 font-mono">COMPLETED</span>
+                        <span className="text-xs text-zinc-500 font-mono uppercase tracking-wider">COMPLETED</span>
                       ) : (
                         <Button
                           onClick={() => handleStartDeepWork(block.id)}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-1"
+                          className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs px-5 py-2 font-mono uppercase tracking-wider shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all"
                         >
                           START 90m
                         </Button>
