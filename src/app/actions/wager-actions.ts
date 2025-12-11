@@ -417,3 +417,40 @@ export async function getRecentSessionVolatility(days: number = 7) {
     activeSession: activeWager || null,
   };
 }
+
+// Get user profile data from users table
+export async function getUserProfile() {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from('users')
+    .select('name, full_name, email, avatar_url')
+    .eq('user_id', user.id)
+    .single();
+
+  if (error) {
+    // If user doesn't exist in users table, try to get from auth metadata
+    const metadata = user.user_metadata ?? {};
+    return {
+      name: metadata.full_name || metadata.name || user.email?.split('@')[0] || 'User',
+      full_name: metadata.full_name || metadata.name || null,
+      email: user.email,
+      avatar_url: metadata.avatar_url || metadata.picture || null,
+    };
+  }
+  
+  // Format name: prefer full_name, then name, then email prefix
+  const displayName = data.full_name || data.name || data.email?.split('@')[0] || 'User';
+  
+  return {
+    name: displayName,
+    full_name: data.full_name || data.name || null,
+    email: data.email || user.email,
+    avatar_url: data.avatar_url || null,
+  };
+}

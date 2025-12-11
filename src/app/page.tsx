@@ -165,12 +165,12 @@ export default async function Home() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
             </div>
-            <span className="text-xs font-mono text-zinc-400">
+            <span className="text-[10px] sm:text-xs font-mono text-zinc-400">
               <span className="text-white font-bold">@alex_s</span> just wagered <span className="text-emerald-400">$50</span> on <span className="text-zinc-300">Ship MVP</span>
             </span>
           </div>
 
-          <h1 className="text-7xl md:text-9xl font-bold tracking-tighter leading-none">
+          <h1 className="text-9xl max-lg:text-7xl max-md:text-5xl max-sm:text-4xl font-bold tracking-tighter leading-none max-sm:px-2">
             SHORT DISTRACTION.
             <br />
             {/* 
@@ -188,13 +188,13 @@ export default async function Home() {
             WHY: Clear visual priority guides user action
             HOW: High-contrast solid (primary) vs glass border (secondary)
           */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12">
+          <div className="flex items-center justify-center gap-4 mt-12 max-sm:flex-col">
             {/* Primary CTA: Maximum contrast */}
-            <Link href="/sign-in" className="px-8 py-4 bg-white text-black font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-zinc-100 transition-colors">
+            <Link href="/sign-in" className="px-8 max-sm:w-full max-sm:px-6 py-4 max-sm:py-3 bg-white text-black font-bold text-sm max-sm:text-xs uppercase tracking-wider rounded-lg hover:bg-zinc-100 transition-colors max-sm:text-center">
               INITIALIZE TERMINAL<span className="animate-pulse">_</span>
             </Link>
             {/* Secondary CTA: Glass aesthetic */}
-            <Link href="/markets" className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold text-sm uppercase tracking-wider rounded-lg hover:bg-white/10 transition-colors backdrop-blur-xl">
+            <Link href="/markets" className="px-8 max-sm:w-full max-sm:px-6 py-4 max-sm:py-3 bg-white/5 border border-white/10 text-white font-bold text-sm max-sm:text-xs uppercase tracking-wider rounded-lg hover:bg-white/10 transition-colors backdrop-blur-xl max-sm:text-center">
               VIEW GLOBAL ORDER BOOK
             </Link>
           </div>
@@ -206,9 +206,9 @@ export default async function Home() {
           HOW: perspective-1000 on parent, then rotateX/Y on child element
           NOTE: Perspective creates vanishing point; rotation tilts the element into 3D space
         */}
-        <div className="mt-20 w-full max-w-4xl mx-auto" style={{ perspective: "1000px" }}>
+        <div className="mt-12 sm:mt-16 md:mt-20 w-full max-w-4xl mx-auto px-4" style={{ perspective: "1000px" }}>
           <div 
-            className="relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl"
+            className="relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl"
             style={{ 
               transform: "rotateX(12deg) rotateY(-4deg)",
               transformStyle: "preserve-3d"
@@ -233,20 +233,20 @@ export default async function Home() {
             </div>
 
             {/* Header Stats Row */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-3 max-sm:grid-cols-1 gap-4 mb-8 max-sm:mb-6">
               <div className="space-y-1">
                 <div className="text-xs text-zinc-500 font-mono uppercase tracking-wider">Portfolio</div>
-                <div className="text-5xl font-bold text-emerald-400 font-mono">$24,891</div>
+                <div className="text-5xl max-md:text-4xl max-sm:text-3xl font-bold text-emerald-400 font-mono">$24,891</div>
                 <div className="text-xs text-emerald-400 font-mono">+12.4%</div>
               </div>
               <div className="space-y-1">
                 <div className="text-xs text-zinc-500 font-mono uppercase tracking-wider">Focus Yield</div>
-                <div className="text-2xl font-bold text-white font-mono">14.2%</div>
+                <div className="text-xl sm:text-2xl font-bold text-white font-mono">14.2%</div>
                 <div className="text-xs text-teal-400 font-mono">+2.1%</div>
               </div>
               <div className="space-y-1">
                 <div className="text-xs text-zinc-500 font-mono uppercase tracking-wider">Win Rate</div>
-                <div className="text-2xl font-bold text-white font-mono">73%</div>
+                <div className="text-xl sm:text-2xl font-bold text-white font-mono">73%</div>
                 <div className="text-xs text-zinc-400 font-mono">Last 30d</div>
               </div>
             </div>
@@ -322,7 +322,7 @@ export default async function Home() {
             {/* Connecting Line */}
             <div className="hidden md:block absolute top-20 left-0 right-0 h-[2px] bg-gradient-to-r from-violet-500/20 via-cyan-500/40 to-emerald-500/20" />
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
+            <div className="grid grid-cols-3 max-md:grid-cols-1 gap-12 max-md:gap-8">
               
               {/* Step 1: Inject Liquidity */}
               <div className="relative">
@@ -470,7 +470,7 @@ export default async function Home() {
                 <div className="relative z-10">
                 
                 {/* Premium Table Header */}
-                <div className="grid grid-cols-3 gap-8 mb-12 pb-8 border-b border-white/10">
+                <div className="grid grid-cols-3 max-sm:grid-cols-1 gap-8 max-sm:gap-4 mb-12 max-sm:mb-8 pb-8 max-sm:pb-6 border-b border-white/10">
                   <div className="text-xs uppercase tracking-[0.2em] text-zinc-400 font-bold">Metric</div>
                   
                   {/* Standard Column Header */}
@@ -494,7 +494,7 @@ export default async function Home() {
                 <div className="space-y-1">
                   
                   {/* Row 1: Accountability */}
-                  <div className="grid grid-cols-3 gap-8 items-center py-6 px-4 rounded-2xl hover:bg-white/[0.03] transition-all duration-300 group/row">
+                  <div className="grid grid-cols-3 max-sm:grid-cols-1 gap-8 max-sm:gap-4 items-center max-sm:items-start py-6 max-sm:py-4 px-4 max-sm:px-3 rounded-2xl hover:bg-white/[0.03] transition-all duration-300 group/row">
                     <div className="text-white font-bold text-base tracking-tight">Accountability</div>
                     <div className="flex justify-center">
                       <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-sm font-medium backdrop-blur-sm shadow-lg shadow-rose-500/5">
@@ -512,7 +512,7 @@ export default async function Home() {
                   <div className="h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
                   {/* Row 2: Asset Value */}
-                  <div className="grid grid-cols-3 gap-8 items-center py-6 px-4 rounded-2xl hover:bg-white/[0.03] transition-all duration-300 group/row">
+                  <div className="grid grid-cols-3 max-sm:grid-cols-1 gap-8 max-sm:gap-4 items-center max-sm:items-start py-6 max-sm:py-4 px-4 max-sm:px-3 rounded-2xl hover:bg-white/[0.03] transition-all duration-300 group/row">
                     <div className="text-white font-bold text-base tracking-tight">Asset Value</div>
                     <div className="flex justify-center">
                       <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-sm font-medium backdrop-blur-sm shadow-lg shadow-rose-500/5">
@@ -530,7 +530,7 @@ export default async function Home() {
                   <div className="h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
                   {/* Row 3: Risk Profile */}
-                  <div className="grid grid-cols-3 gap-8 items-center py-6 px-4 rounded-2xl hover:bg-white/[0.03] transition-all duration-300 group/row">
+                  <div className="grid grid-cols-3 max-sm:grid-cols-1 gap-8 max-sm:gap-4 items-center max-sm:items-start py-6 max-sm:py-4 px-4 max-sm:px-3 rounded-2xl hover:bg-white/[0.03] transition-all duration-300 group/row">
                     <div className="text-white font-bold text-base tracking-tight">Risk Profile</div>
                     <div className="flex justify-center">
                       <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-sm font-medium backdrop-blur-sm shadow-lg shadow-rose-500/5">
@@ -548,7 +548,7 @@ export default async function Home() {
                   <div className="h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
                   {/* Row 4: Outcome */}
-                  <div className="grid grid-cols-3 gap-8 items-center py-6 px-4 rounded-2xl hover:bg-white/[0.03] transition-all duration-300 group/row">
+                  <div className="grid grid-cols-3 max-sm:grid-cols-1 gap-8 max-sm:gap-4 items-center max-sm:items-start py-6 max-sm:py-4 px-4 max-sm:px-3 rounded-2xl hover:bg-white/[0.03] transition-all duration-300 group/row">
                     <div className="text-white font-bold text-base tracking-tight">Outcome</div>
                     <div className="flex justify-center">
                       <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-sm font-medium backdrop-blur-sm shadow-lg shadow-rose-500/5">

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Wager } from '@/types/wager';
 import { calculateTimeRemaining, formatCurrency, ASSET_CLASS_CONFIG } from '@/lib/wager-utils';
 import { getUserWagers } from '@/app/actions/wager-actions';
+import { seedDemoData } from '@/lib/seed-demo-data';
 import confetti from 'canvas-confetti';
 
 export default function ProjectDetailPage({ params }: { params: { id: string } }) {
@@ -20,7 +21,15 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
   const loadWager = async () => {
     try {
-      const wagers = await getUserWagers();
+      let wagers = await getUserWagers();
+      
+      // If user has no wagers, seed demo data
+      if (!wagers || wagers.length === 0) {
+        await seedDemoData();
+        // Reload wagers after seeding
+        wagers = await getUserWagers();
+      }
+      
       const foundWager = wagers?.find(w => w.id === params.id);
       setWager(foundWager || null);
     } catch (error) {
@@ -74,22 +83,22 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const isBleeding = health < 50;
 
   return (
-    <main className="w-full min-h-screen pl-28">
-      <div className="container mx-auto px-6 py-6 max-w-5xl">
+    <main className="w-full min-h-screen pl-28 max-md:pl-0">
+      <div className="container mx-auto px-6 max-sm:px-4 py-6 max-sm:py-4 max-w-5xl">
         {/* Back Button */}
         <button
           onClick={() => router.push('/dashboard')}
-          className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors mb-6"
+          className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors mb-6 max-sm:mb-4"
         >
-          <ArrowLeft size={20} />
-          <span className="label-text">Back to Dashboard</span>
+          <ArrowLeft size={20} className="max-sm:w-[18px] max-sm:h-[18px]" />
+          <span className="label-text max-sm:text-sm">Back to Dashboard</span>
         </button>
 
         {/* Project Header */}
-        <div className="glass-panel p-8 mb-6">
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
+        <div className="glass-panel p-8 max-md:p-6 max-sm:p-4 mb-6">
+          <div className="flex items-start justify-between max-sm:flex-col max-sm:gap-4 mb-6">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 max-sm:gap-2 max-sm:flex-wrap mb-2">
                 <span className="inline-block bg-zinc-800 text-white data-text text-sm px-3 py-1 rounded">
                   {config.symbol}
                 </span>
@@ -97,7 +106,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                   {config.duration} DAY PROJECT
                 </span>
               </div>
-              <h1 className="data-text text-4xl font-bold text-white mb-2">
+              <h1 className="data-text text-4xl max-md:text-3xl max-sm:text-2xl font-bold text-white mb-2 break-words">
                 {wager.title}
               </h1>
               <div className="label-text text-sm">
@@ -113,9 +122,9 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
               </div>
             </div>
 
-            <div className="text-right">
+            <div className="text-right max-sm:text-left max-sm:w-full">
               <div className="label-text mb-1">STAKE</div>
-              <div className="data-text text-3xl font-bold electric-teal">
+              <div className="data-text text-3xl max-sm:text-2xl font-bold electric-teal">
                 {formatCurrency(wager.stake_amount)}
               </div>
             </div>
@@ -147,13 +156,13 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="glass-panel p-6">
+        <div className="grid grid-cols-3 max-sm:grid-cols-1 gap-4 mb-6">
+          <div className="glass-panel p-6 max-sm:p-4">
             <div className="flex items-center gap-3 mb-3">
               <Calendar size={20} className="text-zinc-500" />
               <div className="label-text">TIME REMAINING</div>
             </div>
-            <div className="data-text text-2xl font-bold">
+            <div className="data-text text-2xl max-sm:text-xl font-bold">
               {timeRemaining.days} days
             </div>
             <div className="label-text text-xs mt-1">
@@ -162,12 +171,12 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
             </div>
           </div>
 
-          <div className="glass-panel p-6">
+          <div className="glass-panel p-6 max-sm:p-4">
             <div className="flex items-center gap-3 mb-3">
               <Activity size={20} className="text-zinc-500" />
               <div className="label-text">STATUS</div>
             </div>
-            <div className="data-text text-2xl font-bold">
+            <div className="data-text text-2xl max-sm:text-xl font-bold">
               {wager.status}
             </div>
             <div className="label-text text-xs mt-1">
@@ -175,7 +184,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
             </div>
           </div>
 
-          <div className="glass-panel p-6">
+          <div className="glass-panel p-6 max-sm:p-4">
             <div className="flex items-center gap-3 mb-3">
               <TrendingUp size={20} className="text-zinc-500" />
               <div className="label-text">POTENTIAL RETURN</div>
@@ -190,19 +199,19 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
         </div>
 
         {/* Daily Progress Section */}
-        <div className="glass-panel p-8">
+        <div className="glass-panel p-8 max-md:p-6 max-sm:p-4">
           <div className="mb-6">
-            <h2 className="label-text text-lg mb-2">DAILY PROGRESS</h2>
-            <p className="text-zinc-400 text-sm">
+            <h2 className="label-text text-lg max-sm:text-base mb-2">DAILY PROGRESS</h2>
+            <p className="text-zinc-400 text-sm max-sm:text-xs">
               Complete your daily tasks to maintain this project's health. Each day you log progress restores +10% health and provides a dividend payout.
             </p>
           </div>
 
           {/* Log Progress Button */}
           {wager.status === 'OPEN' && (
-            <div className="flex items-center justify-between glass-panel p-6 border border-white/[0.08]">
-              <div>
-                <div className="data-text text-lg font-bold mb-1">
+            <div className="flex items-center justify-between max-sm:flex-col max-sm:items-start max-sm:gap-4 glass-panel p-6 max-sm:p-4 border border-white/[0.08]">
+              <div className="flex-1 min-w-0">
+                <div className="data-text text-lg max-sm:text-base font-bold mb-1">
                   Today's Training
                 </div>
                 <div className="label-text text-xs">
@@ -211,7 +220,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
               </div>
               <Button
                 onClick={handleLogProgress}
-                className="bg-electric-teal hover:bg-electric-teal/90 text-midnight font-bold uppercase tracking-wider px-8 h-12"
+                className="bg-electric-teal hover:bg-electric-teal/90 text-midnight font-bold uppercase tracking-wider px-8 max-sm:px-6 h-12 max-sm:h-11 max-sm:w-full"
               >
                 <DollarSign size={16} className="mr-2" />
                 LOG PROGRESS

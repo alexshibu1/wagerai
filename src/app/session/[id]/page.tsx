@@ -45,7 +45,7 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
   const [wager, setWager] = useState<Wager | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
-  const [userName, setUserName] = useState<string>('Alex');
+  const [userName, setUserName] = useState<string>('User');
   const [vibeMode, setVibeMode] = useState<'market' | 'cozy'>('market');
   const [isEntering, setIsEntering] = useState(true);
   useEffect(() => {
@@ -57,18 +57,39 @@ export default function FocusSessionPage({ params }: { params: { id: string } })
           return;
         }
 
-        // Get user's name from metadata
-        const metadata = user.user_metadata ?? {};
-        const rawName = metadata.full_name || 
-                        metadata.name || 
-                        user.email?.split('@')[0] || 
-                        'Alex';
-        // Capitalize first letter (handle both single word and multi-word names)
-        const name = rawName.split(' ').map((word: string) => {
-          if (!word) return word;
-          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-        }).join(' ');
-        setUserName(name);
+        // Load user profile for robust name retrieval
+        const { getUserProfile } = await import('@/app/actions/wager-actions');
+        const { getUserWagers } = await import('@/app/actions/wager-actions');
+        const { seedDemoData } = await import('@/lib/seed-demo-data');
+        
+        // Check if user has wagers, if not, seed demo data
+        const wagersData = await getUserWagers();
+        if (!wagersData || wagersData.length === 0) {
+          await seedDemoData();
+        }
+
+        // Get user's name from profile (more reliable than metadata)
+        const profile = await getUserProfile();
+        if (profile && profile.name) {
+          // Capitalize first letter (handle both single word and multi-word names)
+          const name = profile.name.split(' ').map((word: string) => {
+            if (!word) return word;
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+          }).join(' ');
+          setUserName(name);
+        } else {
+          // Fallback to metadata if profile not available
+          const metadata = user.user_metadata ?? {};
+          const rawName = metadata.full_name || 
+                          metadata.name || 
+                          user.email?.split('@')[0] || 
+                          'User';
+          const name = rawName.split(' ').map((word: string) => {
+            if (!word) return word;
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+          }).join(' ');
+          setUserName(name);
+        }
 
         const { data, error } = await supabase
           .from('wagers')

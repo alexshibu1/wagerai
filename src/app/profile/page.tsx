@@ -18,7 +18,7 @@ export default async function Profile() {
     <div className="min-h-screen bg-[#030014] overflow-hidden">
       <FloatingSidebar />
       {/* Main content with left padding for collapsed sidebar */}
-      <main className="pl-20 relative z-10">
+      <main className="pl-0 md:pl-20 relative z-10">
         <ProfileView />
       </main>
     </div>

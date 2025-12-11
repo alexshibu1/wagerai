@@ -133,10 +133,10 @@ export default function FloatingSidebar() {
   const navItems: NavItem[] = useMemo(() => {
     const items: NavItem[] = [
       { href: '/markets', icon: <LayoutDashboard size={20} />, label: 'Markets' },
-      { href: '/profile', icon: <UserIcon size={20} />, label: isAuthenticated ? "Alex's Profile" : 'Profile' },
+      { href: '/profile', icon: <UserIcon size={20} />, label: isAuthenticated && userName ? `${userName}'s Profile` : 'Profile' },
     ];
     return items;
-  }, [isAuthenticated])
+  }, [isAuthenticated, userName])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -154,6 +154,7 @@ export default function FloatingSidebar() {
           flex flex-col p-2
           transition-all duration-300 ease-out
           ${isExpanded ? 'w-48' : 'w-14'}
+          hidden md:flex
         `}
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => setIsExpanded(false)}

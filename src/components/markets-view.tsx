@@ -9,6 +9,7 @@ import { Wager, AssetClass } from '@/types/wager';
 import { getUserWagers, createWager, completeWager, failWager } from '@/app/actions/wager-actions';
 import { ASSET_CLASS_CONFIG, calculateTimeRemaining, formatCurrency } from '@/lib/wager-utils';
 import { createClient } from '../../supabase/client';
+import { seedDemoData } from '@/lib/seed-demo-data';
 
 type ViewMode = 'global' | 'personal';
 
@@ -518,7 +519,16 @@ export default function MarketsView() {
   const loadData = async () => {
     try {
       const wagersData = await getUserWagers();
-      setWagers(wagersData || []);
+      
+      // If user has no wagers, seed demo data
+      if (!wagersData || wagersData.length === 0) {
+        await seedDemoData();
+        // Reload wagers after seeding
+        const refreshedWagers = await getUserWagers();
+        setWagers(refreshedWagers || []);
+      } else {
+        setWagers(wagersData || []);
+      }
     } catch (error) {
       setWagers([]);
     } finally {
@@ -609,7 +619,7 @@ export default function MarketsView() {
   return (
     <>
       <div className="w-full min-h-screen">
-        <div className="container mx-auto px-6 py-6 max-w-7xl">
+        <div className="container mx-auto px-6 max-sm:px-4 py-6 max-sm:py-4 max-w-7xl">
           {/* Header + Toggle */}
           <div className="mb-8 flex flex-col gap-4">
             <div className="flex items-center gap-3">
@@ -622,10 +632,10 @@ export default function MarketsView() {
               </div>
             </div>
 
-            <div className="inline-flex items-center bg-white/5 rounded-full p-1 border border-white/10 w-fit">
+            <div className="inline-flex items-center bg-white/5 rounded-full p-1 border border-white/10 w-fit max-sm:w-full">
               <button
                 onClick={() => setViewMode('global')}
-                className={`px-5 py-2 text-sm font-semibold rounded-full transition-all ${
+                className={`px-5 max-sm:flex-1 max-sm:px-4 py-2 text-sm max-sm:text-xs font-semibold rounded-full transition-all ${
                   viewMode === 'global'
                     ? 'bg-white text-slate-900 shadow-lg'
                     : 'text-zinc-300 hover:text-white'
@@ -635,7 +645,7 @@ export default function MarketsView() {
               </button>
               <button
                 onClick={() => setViewMode('personal')}
-                className={`px-5 py-2 text-sm font-semibold rounded-full transition-all ${
+                className={`px-5 max-sm:flex-1 max-sm:px-4 py-2 text-sm max-sm:text-xs font-semibold rounded-full transition-all ${
                   viewMode === 'personal'
                     ? 'bg-white text-slate-900 shadow-lg'
                     : 'text-zinc-300 hover:text-white'

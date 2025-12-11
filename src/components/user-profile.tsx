@@ -1,14 +1,34 @@
 'use client'
+import { useState, useEffect } from 'react'
 import { UserCircle } from 'lucide-react'
 import { Button } from './ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { createClient } from '../../supabase/client'
 import { useRouter } from 'next/navigation'
+import { getUserProfile } from '@/app/actions/wager-actions'
 
 export default function UserProfile() {
     const supabase = createClient()
     const router = useRouter()
+    const [userName, setUserName] = useState<string | null>(null)
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+
+    useEffect(() => {
+        const loadProfile = async () => {
+            const profile = await getUserProfile()
+            if (profile) {
+                setUserName(profile.name)
+                setAvatarUrl(profile.avatar_url)
+            }
+        }
+        loadProfile()
+    }, [])
+
+    const displayName = userName || 'Profile'
+    const initials = userName 
+        ? userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+        : 'U'
 
     return (
         <DropdownMenu>
@@ -21,14 +41,14 @@ export default function UserProfile() {
                     <span className="absolute inset-[2px] rounded-full bg-[#0b0f1a]" />
                     <Avatar className="relative h-8 w-8 ring-1 ring-white/10">
                         <AvatarImage
-                          src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=facearea&w=200&h=200&q=80"
+                          src={avatarUrl || undefined}
                           className="object-cover"
                         />
                         <AvatarFallback className="bg-gradient-to-br from-violet-600 to-cyan-500 text-white/80">
-                          <UserCircle className="h-5 w-5" />
+                            {initials}
                         </AvatarFallback>
                     </Avatar>
-                    <span className="relative text-sm font-semibold text-white">Alex&apos;s Profile</span>
+                    <span className="relative text-sm font-semibold text-white">{displayName}&apos;s Profile</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent

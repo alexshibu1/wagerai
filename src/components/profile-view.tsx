@@ -7,7 +7,8 @@ import AssetClassInfo from './asset-class-info';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import ContributionHeatmap from './contribution-heatmap';
 import { HeatmapDay } from '@/types/wager';
-import { getDeepWorkStats, getRecentSessionVolatility } from '@/app/actions/wager-actions';
+import { getDeepWorkStats, getRecentSessionVolatility, getUserProfile, getUserWagers } from '@/app/actions/wager-actions';
+import { seedDemoData } from '@/lib/seed-demo-data';
 
 // =============================================================================
 // WAGER MOCK DATA
@@ -276,16 +277,32 @@ export default function ProfileView() {
     }>;
     activeSession: { id: string; title: string; created_at: string } | null;
   } | null>(null);
+  const [userProfile, setUserProfile] = useState<{
+    name: string;
+    full_name: string | null;
+    email: string | null;
+    avatar_url: string | null;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Fetch real data
+  // Fetch real data and user profile
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [stats, sessions] = await Promise.all([
+        // Check if user has wagers, if not, seed demo data
+        const wagersData = await getUserWagers();
+        if (!wagersData || wagersData.length === 0) {
+          await seedDemoData();
+        }
+
+        // Load user profile and other data in parallel
+        const [profile, stats, sessions] = await Promise.all([
+          getUserProfile(),
           getDeepWorkStats(),
           getRecentSessionVolatility(7),
         ]);
+        
+        setUserProfile(profile);
         setDeepWorkStats(stats);
         setSessionData(sessions);
       } catch (err) {
@@ -444,16 +461,18 @@ export default function ProfileView() {
         }}
       />
 
-      <div className="relative container mx-auto px-8 py-10 max-w-[1400px]">
+      <div className="relative container mx-auto px-8 max-md:px-6 max-sm:px-4 py-10 max-md:py-8 max-sm:py-6 max-w-[1400px]">
         
         {/* ============================================== */}
         {/* HERO SECTION - Profile Overview */}
         {/* ============================================== */}
         <div className="mb-12">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-4xl font-bold text-white tracking-tight">Alex's Profile</h1>
+              <div className="flex items-center justify-between mb-8 max-sm:mb-6">
+                <div>
+                  <div className="flex items-center gap-3 max-sm:gap-2 max-sm:flex-wrap mb-2">
+                    <h1 className="text-4xl max-md:text-3xl max-sm:text-2xl font-bold text-white tracking-tight">
+                      {userProfile ? `${userProfile.name}'s Profile` : 'Profile'}
+                    </h1>
                 <div className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-1.5">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -467,10 +486,10 @@ export default function ProfileView() {
           </div>
 
           {/* Main Stats Grid - Reliability Score Left, Stats Right */}
-          <div className="flex gap-6">
+          <div className="flex gap-6 max-lg:flex-col max-sm:gap-4">
             {/* Reliability Score - Featured Card (Fixed Width) */}
             <div 
-              className="relative w-[280px] flex-shrink-0 rounded-3xl overflow-hidden border border-amber-500/20"
+              className="relative w-[280px] max-lg:w-full flex-shrink-0 rounded-3xl overflow-hidden border border-amber-500/20"
               style={{
                 background: `linear-gradient(165deg, 
                   rgba(251, 191, 36, 0.12) 0%, 
@@ -540,7 +559,7 @@ export default function ProfileView() {
             </div>
             
             {/* Right Side - Stats Grid */}
-            <div className="flex-1 grid grid-cols-3 grid-rows-2 gap-4">
+            <div className="flex-1 grid grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 grid-rows-2 max-lg:grid-rows-auto gap-4">
 
             {/* Today's P&L Card - Orange/Sunset Gradient */}
             <div className="relative rounded-2xl overflow-hidden border border-orange-500/20 h-[140px] transition-all duration-300 hover:scale-[1.02] hover:border-orange-400/40 hover:shadow-[0_0_30px_rgba(249,115,22,0.15)] cursor-pointer group" style={{ background: '#0c0c10' }}>
@@ -653,57 +672,57 @@ export default function ProfileView() {
 
               {/* $TDAY Index Mini Chart - spans all 3 columns */}
               <div 
-                className="relative col-span-3 rounded-2xl overflow-hidden border border-white/[0.08] hover:border-emerald-500/20 transition-all"
+                className="relative col-span-3 max-lg:col-span-2 max-sm:col-span-1 rounded-2xl overflow-hidden border border-white/[0.08] hover:border-emerald-500/20 transition-all"
                 style={{ background: 'rgba(10, 10, 15, 0.8)' }}
               >
                 <div className="p-4 pb-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-zinc-400">$TDAY Index</span>
-                      <span className={`text-lg font-mono font-bold ${isRangePositive ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {typeof rangeEndValue === 'number' ? rangeEndValue.toFixed(0) : rangeEndValue}
-                      </span>
-                      {hasActiveSession && (
-                        <span className="relative flex h-2 w-2" title="Active deep work session">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                    <div className="flex items-center justify-between max-sm:flex-col max-sm:items-start max-sm:gap-3 mb-2">
+                      <div className="flex items-center gap-3 max-sm:gap-2 max-sm:flex-wrap">
+                        <span className="text-sm max-sm:text-xs font-medium text-zinc-400">$TDAY Index</span>
+                        <span className={`text-lg max-sm:text-base font-mono font-bold ${isRangePositive ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {typeof rangeEndValue === 'number' ? rangeEndValue.toFixed(0) : rangeEndValue}
                         </span>
-                      )}
-                      {/* Time Range Toggle - Tiny Pills */}
-                      <div className="flex items-center gap-0.5 bg-white/[0.04] rounded p-0.5 ml-1">
-                        {(['1D', '1W', '1M', '1Y'] as TimeRange[]).map((range) => (
-                          <button
-                            key={range}
-                            onClick={() => setSelectedRange(range)}
-                            className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold transition-all ${
-                              selectedRange === range
-                                ? 'bg-emerald-500/20 text-emerald-400'
-                                : 'text-zinc-600 hover:text-zinc-400'
-                            }`}
-                          >
-                            {range}
-                          </button>
-                        ))}
+                        {hasActiveSession && (
+                          <span className="relative flex h-2 w-2" title="Active deep work session">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                          </span>
+                        )}
+                        {/* Time Range Toggle - Tiny Pills */}
+                        <div className="flex items-center gap-0.5 bg-white/[0.04] rounded p-0.5">
+                          {(['1D', '1W', '1M', '1Y'] as TimeRange[]).map((range) => (
+                            <button
+                              key={range}
+                              onClick={() => setSelectedRange(range)}
+                              className={`px-2 max-sm:px-1.5 py-0.5 rounded text-[10px] max-sm:text-[9px] font-mono font-bold transition-all ${
+                                selectedRange === range
+                                  ? 'bg-emerald-500/20 text-emerald-400'
+                                  : 'text-zinc-600 hover:text-zinc-400'
+                              }`}
+                            >
+                              {range}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-6 max-sm:gap-3 max-sm:flex-wrap text-xs max-sm:text-[10px] font-mono">
+                        {/* Range stats */}
+                        <div className="flex items-center gap-3 max-sm:gap-2 max-sm:flex-wrap text-zinc-500">
+                          <span>Open: <span className="text-zinc-300">{rangeStartValue}</span></span>
+                          <span>H: <span className="text-zinc-300">{rangeHigh}</span></span>
+                          <span>L: <span className="text-zinc-300">{rangeLow}</span></span>
+                        </div>
+                        {/* Divider */}
+                        <div className="h-3 w-px bg-zinc-700 max-sm:hidden" />
+                        {/* Last day's stats */}
+                        <div className="flex items-center gap-3 max-sm:gap-2 max-sm:flex-wrap text-zinc-600">
+                          <span className="text-zinc-500">Prev Day</span>
+                          <span>H: <span className="text-zinc-400">{lastDayHigh}</span></span>
+                          <span>L: <span className="text-zinc-400">{lastDayLow}</span></span>
+                          <span>C: <span className="text-zinc-400">{lastDayClose}</span></span>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-6 text-xs font-mono">
-                      {/* Range stats */}
-                      <div className="flex items-center gap-3 text-zinc-500">
-                        <span>Open: <span className="text-zinc-300">{rangeStartValue}</span></span>
-                        <span>H: <span className="text-zinc-300">{rangeHigh}</span></span>
-                        <span>L: <span className="text-zinc-300">{rangeLow}</span></span>
-                      </div>
-                      {/* Divider */}
-                      <div className="h-3 w-px bg-zinc-700" />
-                      {/* Last day's stats */}
-                      <div className="flex items-center gap-3 text-zinc-600">
-                        <span className="text-zinc-500">Prev Day</span>
-                        <span>H: <span className="text-zinc-400">{lastDayHigh}</span></span>
-                        <span>L: <span className="text-zinc-400">{lastDayLow}</span></span>
-                        <span>C: <span className="text-zinc-400">{lastDayClose}</span></span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
                 <div className="h-[100px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -779,7 +798,7 @@ export default function ProfileView() {
             <AssetClassInfo />
           </div>
           
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 gap-6 max-sm:gap-4">
             {/* $TDAY Card */}
             <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0a0a0f] group hover:border-emerald-500/30 transition-all duration-500">
               <div 
@@ -860,7 +879,7 @@ export default function ProfileView() {
         {/* ============================================== */}
         {/* PROOF OF WORK + DEEP WORK + FOCUS AREAS ROW */}
         {/* ============================================== */}
-        <div className="mb-12 flex gap-4">
+        <div className="mb-12 flex gap-4 max-lg:flex-col">
           {/* LEFT: Proof of Work Heatmap Card */}
           <div className="relative rounded-2xl border border-emerald-400/30 bg-gradient-to-br from-[#08120f] via-[#0b0f1a] to-[#06060c] p-5 overflow-hidden shadow-[0_0_55px_-16px_rgba(16,185,129,0.35)]">
             <div className="pointer-events-none absolute inset-0 rounded-[18px]">
@@ -909,7 +928,7 @@ export default function ProfileView() {
           </div>
           
           {/* MIDDLE: Deep Work Widget */}
-          <div className="w-[200px] flex-shrink-0 rounded-2xl border border-violet-500/20 p-5 flex flex-col"
+          <div className="w-[200px] max-lg:w-full flex-shrink-0 rounded-2xl border border-violet-500/20 p-5 flex flex-col"
             style={{
               background: 'linear-gradient(165deg, rgba(139, 92, 246, 0.08) 0%, rgba(10, 10, 15, 0.95) 100%)',
             }}
@@ -1022,9 +1041,9 @@ export default function ProfileView() {
         {/* ============================================== */}
         {/* BOTTOM GRID - Charts + Activity */}
         {/* ============================================== */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 max-lg:grid-cols-1 gap-6 max-sm:gap-4">
           {/* Portfolio Growth Chart */}
-          <div className="col-span-2 rounded-2xl border border-white/[0.08] bg-[#0a0a0f] p-6">
+          <div className="col-span-1 lg:col-span-2 rounded-2xl border border-white/[0.08] bg-[#0a0a0f] p-4 sm:p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <BarChart3 size={18} className="text-blue-400" />
@@ -1087,7 +1106,7 @@ export default function ProfileView() {
           </div>
 
           {/* Positions - Tabbed View */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#0a0a0f] p-6">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#0a0a0f] p-6 max-sm:p-4">
             <Tabs defaultValue="active" className="w-full">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-white">Positions</h3>
