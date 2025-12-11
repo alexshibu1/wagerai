@@ -1,6 +1,6 @@
 # ⚡ WAGER
 
-> **Transform distraction into profit. Make your attention tradeable.**
+> **Transform distraction into profit. Make your attention tradable.**
 
 <div align="center">
 
@@ -29,7 +29,7 @@ Traditional To-Do List → No accountability → Procrastination
 WAGER System → Financial stakes → Proof of Work
 ```
 
-WAGER transforms your goals into tradeable assets across three time horizons:
+WAGER transforms your goals into tradable assets across three time horizons:
 - **$TDAY** (Today): Short-term focus bets (4-24 hours)
 - **$SHIP** (This Week): Sprint-level commitments (1-7 days)  
 - **$YEAR** (Annual): Long-term position holdings (30-365 days)
