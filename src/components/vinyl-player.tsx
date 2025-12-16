@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, Volume2 } from 'lucide-react';
+import * as SliderPrimitive from '@radix-ui/react-slider';
 
 // YouTube video ID from the provided URL
 const YOUTUBE_VIDEO_ID = 'h_a3tqywv3I';
@@ -17,6 +18,7 @@ declare global {
 export default function VinylPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [volume, setVolume] = useState(50);
   const playerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -71,7 +73,10 @@ export default function VinylPlayer() {
       },
       events: {
         onReady: () => {
-          // Player is ready
+          // Player is ready - set initial volume
+          if (playerRef.current) {
+            playerRef.current.setVolume(volume);
+          }
         },
         onStateChange: (event: any) => {
           // Update playing state based on YouTube player state
@@ -100,6 +105,17 @@ export default function VinylPlayer() {
       console.error('Error controlling playback:', error);
     }
   }, [isPlaying]);
+
+  // Update volume when it changes
+  useEffect(() => {
+    if (!playerRef.current) return;
+
+    try {
+      playerRef.current.setVolume(volume);
+    } catch (error) {
+      console.error('Error setting volume:', error);
+    }
+  }, [volume]);
 
   return (
     <div 
@@ -159,7 +175,7 @@ export default function VinylPlayer() {
           e.stopPropagation();
           setIsPlaying(!isPlaying);
         }}
-        className="flex items-center justify-center rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all w-8 h-8 hover:scale-105"
+        className="flex items-center justify-center rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all w-8 h-8 hover:scale-105 mb-2"
       >
         {isPlaying ? (
           <Pause size={14} className="text-cyan-400 drop-shadow-lg" />
@@ -167,6 +183,24 @@ export default function VinylPlayer() {
           <Play size={14} className="text-cyan-400 drop-shadow-lg ml-0.5" />
         )}
       </button>
+
+      {/* Volume Control */}
+      <div className="flex items-center gap-2 w-full px-1">
+        <Volume2 size={12} className="text-cyan-400/60 flex-shrink-0" />
+        <SliderPrimitive.Root
+          value={[volume]}
+          onValueChange={(value) => setVolume(value[0])}
+          min={0}
+          max={100}
+          step={1}
+          className="relative flex w-full touch-none select-none items-center"
+        >
+          <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-cyan-500/10">
+            <SliderPrimitive.Range className="absolute h-full bg-cyan-500/60" />
+          </SliderPrimitive.Track>
+          <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border-2 border-cyan-400 bg-cyan-500/20 shadow-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 disabled:pointer-events-none disabled:opacity-50 hover:scale-110 hover:bg-cyan-500/30" />
+        </SliderPrimitive.Root>
+      </div>
     </div>
   );
 }
