@@ -18,6 +18,7 @@ declare global {
 export default function VinylPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [playerReady, setPlayerReady] = useState(false);
   const [volume, setVolume] = useState(50);
   const playerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -73,9 +74,14 @@ export default function VinylPlayer() {
       },
       events: {
         onReady: () => {
-          // Player is ready - set initial volume
+          // Player is ready - set initial volume and mark as ready
           if (playerRef.current) {
-            playerRef.current.setVolume(volume);
+            try {
+              playerRef.current.setVolume(volume);
+              setPlayerReady(true);
+            } catch (error) {
+              console.error('Error initializing player:', error);
+            }
           }
         },
         onStateChange: (event: any) => {
@@ -93,18 +99,21 @@ export default function VinylPlayer() {
 
   // Control playback based on isPlaying state
   useEffect(() => {
-    if (!playerRef.current) return;
+    if (!playerRef.current || !playerReady) return;
 
     try {
+      // Check if player methods are available
+      if (typeof playerRef.current.playVideo === 'function' && typeof playerRef.current.pauseVideo === 'function') {
       if (isPlaying) {
         playerRef.current.playVideo();
       } else {
         playerRef.current.pauseVideo();
+        }
       }
     } catch (error) {
       console.error('Error controlling playback:', error);
     }
-  }, [isPlaying]);
+  }, [isPlaying, playerReady]);
 
   // Update volume when it changes
   useEffect(() => {
@@ -130,8 +139,8 @@ export default function VinylPlayer() {
         ref={containerRef}
         style={{
           position: 'absolute',
-          width: '1px',
-          height: '1px',
+          width: '320px',
+          height: '180px',
           opacity: 0,
           pointerEvents: 'none',
           overflow: 'hidden',
@@ -173,9 +182,14 @@ export default function VinylPlayer() {
       <button
         onClick={(e) => {
           e.stopPropagation();
+          if (!playerReady) {
+            console.warn('Player not ready yet');
+            return;
+          }
           setIsPlaying(!isPlaying);
         }}
-        className="flex items-center justify-center rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all w-8 h-8 hover:scale-105 mb-2"
+        disabled={!playerReady}
+        className="flex items-center justify-center rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all w-8 h-8 hover:scale-105 mb-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPlaying ? (
           <Pause size={14} className="text-cyan-400 drop-shadow-lg" />
